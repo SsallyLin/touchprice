@@ -1,7 +1,7 @@
 import pytest
 from shioaji.contracts import Future
 from shioaji.order import Order
-from touchprice import TouchOrder, TouchOrderCond
+from touchprice import TouchOrder, TouchOrderCond, OrderCmd
 
 
 @pytest.fixture()
@@ -40,34 +40,79 @@ def order():
 
 
 def test_set_condition(contract: Future, order: Order, touch_order: TouchOrder):
-    condition = TouchOrderCond(order=order, contract=contract, touch_price=9985)
+    condition = TouchOrderCond(
+        touch_contract=contract,
+        touch_price=9985.0,
+        order_cmd=OrderCmd(contract=contract, order=order),
+    )
     touch_order.set_condition(condition)
-    res = touch_order.conditions.get(condition.contract.code)
-    assert res == condition
-    touch_order.api.quote.subscribe.assert_called_once_with(condition.contract)
+    res = touch_order.conditions.get(
+        "{}/{}".format(condition.touch_contract.code, condition.touch_price)
+    )
+    assert res[-1].contract == condition.order_cmd.contract
+    assert res[-1].order == condition.order_cmd.order
+    assert res[-1].excuted == False
+    touch_order.api.quote.subscribe.assert_called_once_with(
+        condition.touch_contract
+    )
 
 
 testcase_delete_condition = [["TXFC0", True], ["TXFD0", False]]
 
 
-@pytest.mark.parametrize(
-    "contract_code, unsubscribed", testcase_delete_condition
-)
+@pytest.mark.parametrize("contract_code, deleted", testcase_delete_condition)
 def test_delete_condition(
     contract: Future,
     order: Order,
     touch_order: TouchOrder,
     contract_code: str,
-    unsubscribed: bool,
+    deleted: bool,
 ):
     touch_cond = TouchOrderCond(
-        order=order, contract=contract, touch_price=9985
+        touch_contract=contract,
+        touch_price=9985.0,
+        order_cmd=OrderCmd(contract=contract, order=order),
     )
-    touch_order.conditions = {contract_code: touch_cond}
+    cond_key = "{}/{}".format(touch_cond.touch_contract, touch_cond.touch_price)
+    touch_order.conditions = {
+        cond_key: [
+            OrderCmd(
+                contract=Future(
+                    code=contract_code,
+                    symbol="TXF202003",
+                    name="臺股期貨",
+                    category="TXF",
+                    delivery_month="202003",
+                    underlying_kind="I",
+                ),
+                order=touch_cond.order_cmd.order,
+                excuted=touch_cond.order_cmd.excuted,
+            )
+        ]
+    }
     touch_order.delete_condition(touch_cond)
-    res = not touch_order.conditions
-    assert res == unsubscribed
-    assert touch_order.api.quote.unsubscribe.called == unsubscribed
+    ordercmd = OrderCmd(
+        contract=touch_cond.order_cmd.contract,
+        order=touch_cond.order_cmd.order,
+        excuted=touch_cond.order_cmd.excuted,
+    )
+    res = ordercmd in touch_order.conditions.get(cond_key)
+    assert res == deleted
+
+
+def test_show_conditions(
+    contract: Future, order: Order, touch_order: TouchOrder
+):
+    condition = TouchOrderCond(
+        touch_contract=contract,
+        touch_price=9985.0,
+        order_cmd=OrderCmd(contract=contract, order=order),
+    )
+    touch_order.set_condition(condition)
+    res = touch_order.show_condition()
+    key = "{}/{}".format(condition.touch_contract.code, condition.touch_price)
+    value = [condition.order_cmd]
+    assert res == {key: value}
 
 
 testcase_touch = [[9985, True], [9999, False]]
@@ -82,21 +127,31 @@ def test_touch(
     price_touched: bool,
 ):
     topic = "O/TXFC0"
-    quote = {"Close": [9985]}
+    quote = {"Close": [9985.0]}
     touch_cond = TouchOrderCond(
-        order=order, contract=contract, touch_price=price
+        touch_contract=contract,
+        touch_price=price,
+        order_cmd=OrderCmd(contract=contract, order=order),
     )
-    touch_order.conditions = {touch_cond.contract.code: touch_cond}
+    touch_key = "{}/{}".format(
+        touch_cond.touch_contract.code, touch_cond.touch_price
+    )
+    touch_order.conditions = {
+        touch_key: [
+            OrderCmd(
+                contract=touch_cond.order_cmd.contract,
+                order=touch_cond.order_cmd.order,
+                excuted=touch_cond.order_cmd.excuted,
+            )
+        ]
+    }
     touch_order.touch(topic, quote)
-    res = touch_order.conditions.get(touch_cond.contract.code).flag
+    res = touch_order.conditions.get(touch_key)[-1].excuted
     assert res == price_touched
     assert touch_order.api.place_order.called == price_touched
-    assert touch_order.api.quote.unsubscribe.called == price_touched
     if price_touched:
         touch_order.api.place_order.assert_called_once_with(
-            touch_cond.contract, touch_cond.order
-        )
-        touch_order.api.quote.unsubscribe.assert_called_once_with(
-            touch_cond.contract
+            touch_order.conditions[touch_key][-1].contract,
+            touch_order.conditions[touch_key][-1].order,
         )
 
