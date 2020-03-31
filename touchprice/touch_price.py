@@ -3,16 +3,36 @@ import typing
 from pydantic import BaseModel
 
 
+class TouchCmd(BaseModel):
+    contract: sj.contracts.Contract
+    price: float
+
+    def __init__(self, contract: sj.contracts.Contract, price: float):
+        super().__init__(**dict(contract=contract, price=price))
+
+
 class OrderCmd(BaseModel):
     contract: sj.contracts.Contract
     order: sj.order.Order
     excuted: bool = False
 
+    def __init__(
+        self,
+        contract: sj.contracts.Contract,
+        order: sj.order.Order,
+        excuted: bool = False,
+    ):
+        super().__init__(
+            **dict(contract=contract, order=order, excuted=excuted)
+        )
+
 
 class TouchOrderCond(BaseModel):
-    touch_contract: sj.contracts.Contract
-    touch_price: float
+    touch_cmd: TouchCmd
     order_cmd: OrderCmd
+
+    def __init__(self, touch_cmd: TouchCmd, order_cmd: OrderCmd):
+        super().__init__(**dict(touch_cmd=touch_cmd, order_cmd=order_cmd))
 
 
 class TouchOrder:
@@ -22,31 +42,27 @@ class TouchOrder:
 
     def set_condition(self, condition: TouchOrderCond):
         condition_key = "{code}/{price}".format(
-            code=condition.touch_contract.code, price=condition.touch_price
+            code=condition.touch_cmd.contract.code,
+            price=condition.touch_cmd.price,
         )
-        order_condition = OrderCmd(
-            contract=condition.order_cmd.contract,
-            order=condition.order_cmd.order,
-        )
+        order_condition = condition.order_cmd
         if condition_key in self.conditions.keys():
             self.conditions[condition_key].append(order_condition)
         else:
             self.conditions[condition_key] = [order_condition]
-        self.api.quote.subscribe(condition.touch_contract)
+        self.api.quote.subscribe(condition.touch_cmd.contract)
         self.api.quote.set_quote_callback(self.touch)
 
     def delete_condition(self, condition: TouchOrderCond):
         condition_key = "{code}/{price}".format(
-            code=condition.touch_contract.code, price=condition.touch_price
+            code=condition.touch_cmd.contract.code,
+            price=condition.touch_cmd.price,
         )
+        order_cmd = condition.order_cmd
         if self.conditions.get(condition_key, False):
-            ordercmd = OrderCmd(
-                contract=condition.order_cmd.contract,
-                order=condition.order_cmd.order,
-                excuted=condition.order_cmd.excuted,
-            )
-            self.conditions[condition_key].remove(ordercmd)
-            return self.conditions[condition_key]
+            if order_cmd in self.conditions[condition_key]:
+                self.conditions[condition_key].remove(order_cmd)
+                return self.conditions[condition_key]
 
     def show_condition(self, touch_code: str = None, touch_price: float = None):
         if touch_code and touch_price:
@@ -63,6 +79,5 @@ class TouchOrder:
         if ordercmds:
             for num, cmd in enumerate(ordercmds):
                 if not cmd.excuted:
+                    self.conditions[touch_key][num].excuted = True
                     trade = self.api.place_order(cmd.contract, cmd.order)
-                    if trade.status.status != sj.order.Status.Failed:
-                        self.conditions[touch_key][num].excuted = True

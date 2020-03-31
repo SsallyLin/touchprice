@@ -1,1 +1,1 @@
-from .touch_price import TouchOrder, TouchOrderCond, OrderCmd
+from .touch_price import TouchOrder, TouchOrderCond, OrderCmd, TouchCmd
