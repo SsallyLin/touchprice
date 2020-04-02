@@ -4,6 +4,6 @@ Touchprice is an extension feature of Shioaji. Using the conditions to trigger p
 
 ## Installation
 
-pip install touchprice
+    pip install touchprice
 
 ## WIP
