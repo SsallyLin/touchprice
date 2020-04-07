@@ -19,29 +19,12 @@ Just import our API library like other popular python library and adding Shioaji
 TouchOrderCond contains touch condition and order condition. 
 
 ### Touch condition
-    touch_contract = Future(
-        code="TXFC0",
-        symbol="TXF202003",
-        name="臺股期貨",
-        category="TXF",
-        delivery_month="202003",
-        underlying_k
-        ind="I",
-        )
-
+    code="TXFC0",
     touch_price = 9985.0
-    touch_cond=TouchCmd(contract=touch_contract, price=touch_price)
+    touch_cond=TouchCmd(code=code, price=touch_price)
 
 ### Order condition
-    order_contract = Future(
-        code="TXFD0",
-        symbol="TXF202004",
-        name="臺股期貨",
-        category="TXF",
-        delivery_month="202004",
-        underlying_k
-        ind="I",
-        )
+    code="TXFD0",
     order = Order(
         action="Buy",
         price=-1,
@@ -50,7 +33,7 @@ TouchOrderCond contains touch condition and order condition.
         price_type="MKT",
         octype="Auto",
         )
-    order_cond = OrderCmd(contract=order_contract, order=order)
+    order_cond = OrderCmd(code=code, order=order)
 
 ### 
     condition = TouchOrderCond(
