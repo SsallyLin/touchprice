@@ -4,27 +4,20 @@ from pydantic import BaseModel
 
 
 class TouchCmd(BaseModel):
-    contract: sj.contracts.Contract
+    code: str
     price: float
 
-    def __init__(self, contract: sj.contracts.Contract, price: float):
-        super().__init__(**dict(contract=contract, price=price))
+    def __init__(self, code: str, price: float):
+        super().__init__(**dict(code=code, price=price))
 
 
 class OrderCmd(BaseModel):
-    contract: sj.contracts.Contract
+    code: str
     order: sj.order.Order
     excuted: bool = False
 
-    def __init__(
-        self,
-        contract: sj.contracts.Contract,
-        order: sj.order.Order,
-        excuted: bool = False,
-    ):
-        super().__init__(
-            **dict(contract=contract, order=order, excuted=excuted)
-        )
+    def __init__(self, code: str, order: sj.order.Order, excuted: bool = False):
+        super().__init__(**dict(code=code, order=order, excuted=excuted))
 
 
 class TouchOrderCond(BaseModel):
@@ -35,28 +28,38 @@ class TouchOrderCond(BaseModel):
         super().__init__(**dict(touch_cmd=touch_cmd, order_cmd=order_cmd))
 
 
+def get_contracts(api: sj.Shioaji):
+    contracts = {
+        code: contract
+        for name, iter_contract in api.Contracts
+        for code, contract in iter_contract._code2contract.items()
+    }
+    return contracts
+
+
 class TouchOrder:
     def __init__(self, api: sj.Shioaji):
         self.api: sj.Shioaji = api
         self.conditions: typing.Dict[str, typing.List[OrderCmd]] = {}
+        self.contracts: dict = get_contracts(self.api)
 
     def set_condition(self, condition: TouchOrderCond):
+        code = condition.touch_cmd.code
+        touch_contract = self.contracts[code]
         condition_key = "{code}/{price}".format(
-            code=condition.touch_cmd.contract.code,
-            price=condition.touch_cmd.price,
+            code=condition.touch_cmd.code, price=condition.touch_cmd.price
         )
         order_condition = condition.order_cmd
         if condition_key in self.conditions.keys():
             self.conditions[condition_key].append(order_condition)
         else:
             self.conditions[condition_key] = [order_condition]
-        self.api.quote.subscribe(condition.touch_cmd.contract)
+        self.api.quote.subscribe(touch_contract)
         self.api.quote.set_quote_callback(self.touch)
 
     def delete_condition(self, condition: TouchOrderCond):
         condition_key = "{code}/{price}".format(
-            code=condition.touch_cmd.contract.code,
-            price=condition.touch_cmd.price,
+            code=condition.touch_cmd.code, price=condition.touch_cmd.price
         )
         order_cmd = condition.order_cmd
         if self.conditions.get(condition_key, False):
@@ -80,4 +83,5 @@ class TouchOrder:
             for num, cmd in enumerate(ordercmds):
                 if not cmd.excuted:
                     self.conditions[touch_key][num].excuted = True
-                    trade = self.api.place_order(cmd.contract, cmd.order)
+                    order_contract = self.contracts[cmd.code]
+                    trade = self.api.place_order(order_contract, cmd.order)
