@@ -18,5 +18,4 @@ jobs:
           poetry install
       - name: Test with pytest
         run: |
-          pip install pytest
-          pytest test/test_touch_price.py
+          poetry run pytest
