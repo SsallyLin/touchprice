@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "touchprice"
-version = "0.0.1"
+version = "0.0.3"
 description = "shioaji touchprice extentions"
 authors = ["Sally <nipolikae@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
 requests = "2.22.0"
-shioaji = "^0.2.0-alpha.0"
+shioaji = "^0.2.0-dev.0"
 
 [tool.poetry.dev-dependencies]
 
