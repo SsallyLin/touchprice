@@ -14,10 +14,9 @@ class TouchCmd(BaseModel):
 class OrderCmd(BaseModel):
     code: str
     order: sj.order.Order
-    excuted: bool = False
 
-    def __init__(self, code: str, order: sj.order.Order, excuted: bool = False):
-        super().__init__(**dict(code=code, order=order, excuted=excuted))
+    def __init__(self, code: str, order: sj.order.Order):
+        super().__init__(**dict(code=code, order=order))
 
 
 class TouchOrderCond(BaseModel):
@@ -28,11 +27,19 @@ class TouchOrderCond(BaseModel):
         super().__init__(**dict(touch_cmd=touch_cmd, order_cmd=order_cmd))
 
 
+class StoreCond(BaseModel):
+    price: float
+    action: str
+    order_contract: sj.contracts.Contract
+    order: sj.Order
+    excuted: bool = False
+
+
 def get_contracts(api: sj.Shioaji):
     contracts = {
         code: contract
         for name, iter_contract in api.Contracts
-        for code, contract in iter_contract._code2contract.items()
+        for code, contract in iter_contract._code1contract.items()
     }
     return contracts
 
@@ -40,48 +47,49 @@ def get_contracts(api: sj.Shioaji):
 class TouchOrder:
     def __init__(self, api: sj.Shioaji):
         self.api: sj.Shioaji = api
-        self.conditions: typing.Dict[str, typing.List[OrderCmd]] = {}
+        self.conditions: typing.Dict[str, typing.List[StoreCond]] = {}
         self.contracts: dict = get_contracts(self.api)
 
     def set_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
-        condition_key = "{code}/{price}".format(
-            code=condition.touch_cmd.code, price=condition.touch_cmd.price
-        )
-        order_condition = condition.order_cmd
-        if condition_key in self.conditions.keys():
-            self.conditions[condition_key].append(order_condition)
+        store_condition = StoreCond(price=condition.touch_cmd.price,
+                                    action=condition.order_cmd.order.action,
+                                    order_contract=self.contracts[
+                                        condition.order_cmd.code],
+                                    order=condition.order_cmd.order)
+        if code in self.conditions.keys():
+            self.conditions[code].append(store_condition)
         else:
-            self.conditions[condition_key] = [order_condition]
+            self.conditions[code] = [store_condition]
         self.api.quote.subscribe(touch_contract)
         self.api.quote.set_quote_callback(self.touch)
 
     def delete_condition(self, condition: TouchOrderCond):
-        condition_key = "{code}/{price}".format(
-            code=condition.touch_cmd.code, price=condition.touch_cmd.price
-        )
-        order_cmd = condition.order_cmd
-        if self.conditions.get(condition_key, False):
-            if order_cmd in self.conditions[condition_key]:
-                self.conditions[condition_key].remove(order_cmd)
-                return self.conditions[condition_key]
+        code = condition.touch_cmd.code
+        store_condition = StoreCond(price=condition.touch_cmd.price,
+                                    action=condition.order_cmd.order.action,
+                                    order_contract=self.contracts[
+                                        condition.order_cmd.code],
+                                    order=condition.order_cmd.order)
+        if self.conditions.get(code, False):
+            if store_condition in self.conditions[code]:
+                self.conditions[code].remove(store_condition)
+                return self.conditions[code]
 
-    def show_condition(self, touch_code: str = None, touch_price: float = None):
-        if touch_code and touch_price:
-            cond_key = "{}/{}".format(touch_code, touch_price)
-            return self.conditions.get(cond_key, "Not exist.")
-        else:
-            return self.conditions
 
     def touch(self, topic, quote):
         code = topic.split("/")[-1]
         price = quote["Close"][0]
-        touch_key = "{code}/{price}".format(code=code, price=price)
-        ordercmds = self.conditions.get(touch_key, False)
+        ordercmds = self.conditions.get(code, False)
         if ordercmds:
             for num, cmd in enumerate(ordercmds):
                 if not cmd.excuted:
-                    self.conditions[touch_key][num].excuted = True
-                    order_contract = self.contracts[cmd.code]
-                    trade = self.api.place_order(order_contract, cmd.order)
+                    if cmd.action == "Buy":
+                        if price >= cmd.price:
+                            self.conditions[code][num].excuted = True
+                            trade = self.api.place_order(cmd.order_contract, cmd.order)
+                    else:
+                        if price <= cmd.price:
+                            self.conditions[code][num].excuted = True
+                            trade = self.api.place_order(cmd.order_contract, cmd.order)
