@@ -46,6 +46,4 @@ TouchOrderCond contains touch condition and order condition.
 ## Delete condition
     touch.delete_condition(condition)
 
-## Show condition
-    touch.show_conditions()
 
