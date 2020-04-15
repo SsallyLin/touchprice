@@ -1,7 +1,19 @@
 import pytest
 from shioaji.contracts import Future
 from shioaji.order import Order
-from touchprice import TouchOrder, TouchOrderCond, OrderCmd, TouchCmd, StoreCond
+from shioaji.data import Snapshots, Snapshot
+from touchprice import (
+    TouchOrder,
+    TouchOrderCond,
+    OrderCmd,
+    TouchCmd,
+    StoreCond,
+    TouchCond,
+    PriceInterval,
+    QtyInterval,
+    Scope,
+    StatusInfo,
+)
 
 
 @pytest.fixture()
@@ -45,22 +57,68 @@ def order():
     )
 
 
-def test_set_condition(contract: Future, order: Order, touch_order: TouchOrder):
+test_condition = [
+    [TouchCond(price=PriceInterval(price_type="LimitUp"))],
+    [TouchCond(buy_price=PriceInterval(price=11.0, price_type="LimitDown"))],
+    [TouchCond(low_price=PriceInterval(price_type="LimitPrice"))],
+    [TouchCond(ups_downs=Scope(scope=3, scopetype="UpAbove"))],
+    [TouchCond(scope=Scope(scope=3, scopetype="DownBelow"))],
+    [TouchCond(qty=QtyInterval(qty=2, trend="Up"))],
+    [
+        TouchCond(
+            price=PriceInterval(price_type="Unchanged"),
+            ups_downs=Scope(scope=7, scopetype="UpBelow"),
+        )
+    ],
+    [
+        TouchCond(
+            buy_price=PriceInterval(price=10.0, price_type="LimitPrice"),
+            qty=QtyInterval(qty=1, trend="Down"),
+        )
+    ],
+    [
+        TouchCond(
+            scope=Scope(scope=3.5, scopetype="DownAbove"),
+            qty=QtyInterval(qty=5, trend="Equal"),
+        )
+    ],
+    [
+        TouchCond(
+            low_price=PriceInterval(price_type="Unchanged"),
+            ups_downs=Scope(scope=3, scopetype="UpAbove"),
+            sum_qty=QtyInterval(qty=100, trend="Up"),
+        )
+    ],
+    [TouchCond()],
+]
+
+
+def test_set_condition(mocker, contract: Future, order: Order, touch_order: TouchOrder):
     condition = TouchOrderCond(
-        touch_cmd=TouchCmd(code="TXFC0", price=9985.0),
+        touch_cmd=TouchCmd(
+            code="TXFC0",
+            conditions=TouchCond(
+                price=PriceInterval(price=11.0, price_type="LimitPrice", trend="Up")
+            ),
+        ),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
     touch_order.contracts = contract
+    touch_order.update_snapshot = mocker.MagicMock()
+    touch_order.adjust_codition = mocker.MagicMock()
     touch_order.set_condition(condition)
-    res = touch_order.conditions.get(condition.touch_cmd.code)
-    assert res[-1].price == condition.touch_cmd.price
-    assert res[-1].action == condition.order_cmd.order.action
-    assert res[-1].order_contract == contract[condition.order_cmd.code]
-    assert res[-1].order == condition.order_cmd.order
-    assert res[-1].excuted == False
-    touch_order.api.quote.subscribe.assert_called_once_with(
+    touch_order.update_snapshot.assert_called_once_with(
         touch_order.contracts[condition.touch_cmd.code]
     )
+    touch_order.adjust_codition.assert_called_with(
+        condition, touch_order.contracts[condition.touch_cmd.code]
+    )
+    touch_order.api.quote.subscribe.assert_called_with(
+        touch_order.contracts[condition.touch_cmd.code], quote_type="bidask"
+    )
+    assert touch_order.api.quote.subscribe.call_count == 2
+    res = touch_order.conditions.get(condition.touch_cmd.code)
+    assert not res == False
 
 
 testcase_delete_condition = [["TXFC0", False], ["TXFD0", False]]
@@ -85,7 +143,7 @@ def test_delete_condition(
             StoreCond(
                 price=touch_cond.touch_cmd.price,
                 action=touch_cond.order_cmd.order.action,
-                order_contract=touch_order.contracts[touch_cond.order_cmd.code],
+                order_contract=touch_order.contracts[cond_key],
                 order=touch_cond.order_cmd.order,
                 excuted=False,
             )
@@ -104,7 +162,6 @@ def test_delete_condition(
     else:
         res = False
     assert res == deleted
-
 
 
 testcase_touch = [[9900, True], [9985, True], [9999, False]]
@@ -131,7 +188,7 @@ def test_touch(
             StoreCond(
                 price=touch_cond.touch_cmd.price,
                 action=touch_cond.order_cmd.order.action,
-                order_contract=touch_order.contracts[touch_cond.order_cmd.code],
+                order_contract=touch_order.contracts[touch_key],
                 order=touch_cond.order_cmd.order,
                 excuted=False,
             )

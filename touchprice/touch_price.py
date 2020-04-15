@@ -2,11 +2,13 @@ import shioaji as sj
 import typing
 from pydantic import BaseModel
 from functools import partial
+from enum import Enum
 
 
 class Trend(str, Enum):
     Up = "Up"
     Down = "Down"
+    Equal = "Equal"
 
 
 class PriceType(str, Enum):
@@ -26,20 +28,23 @@ class ScopeType(str, Enum):
 class PriceInterval(BaseModel):
     price: float = 0.0
     price_type: PriceType = PriceType.LimitPrice
-    trend: Trend
+    trend: Trend = Trend.Equal
 
     def __init__(
         self,
-        trend: Trend,
+        trend: Trend = Trend.Equal,
         price: float = 0.0,
         price_type: PriceType = PriceType.LimitPrice,
     ):
-        super().__init__(trend=trend, price=price, price_type=price_type)
+        super().__init__(**dict(trend=trend, price=price, price_type=price_type))
 
 
 class QtyInterval(BaseModel):
     qty: int
     trend: Trend
+
+    def __init__(self, qty: int, trend: Trend):
+        super().__init__(**dict(qty=qty, trend=trend))
 
 
 class Scope(BaseModel):
@@ -49,7 +54,7 @@ class Scope(BaseModel):
     trend: Trend = None
 
     def __init__(self, scope: typing.Union[int, float], scopetype: ScopeType):
-        super().__init__(scope=scope, scopetype=scopetype)
+        super().__init__(**dict(scope=scope, scopetype=scopetype))
 
 
 class TouchCond(BaseModel):
@@ -62,6 +67,32 @@ class TouchCond(BaseModel):
     scope: Scope = None
     qty: QtyInterval = None
     sum_qty: QtyInterval = None
+
+    def __init__(
+        self,
+        price: PriceInterval = None,
+        buy_price: PriceInterval = None,
+        sell_price: PriceInterval = None,
+        high_price: PriceInterval = None,
+        low_price: PriceInterval = None,
+        ups_downs: Scope = None,
+        scope: Scope = None,
+        qty: QtyInterval = None,
+        sum_qty: QtyInterval = None,
+    ):
+        super().__init__(
+            **dict(
+                price=price,
+                buy_price=buy_price,
+                sell_price=sell_price,
+                high_price=high_price,
+                low_price=low_price,
+                ups_downs=ups_downs,
+                scope=scope,
+                qty=qty,
+                sum_qty=sum_qty,
+            )
+        )
 
 
 class TouchCmd(BaseModel):
@@ -125,14 +156,10 @@ class TouchOrder:
 
     def update_snapshot(self, contract: sj.contracts.Contract):
         code = contract.code
-        if code not in self.snapshots.keys():
-            self.infos[code] = StatusInfo(
-                **self.api.snapshots([contract]).snapshot[0]
-            )
+        if code not in self.infos.keys():
+            self.infos[code] = StatusInfo(**self.api.snapshots([contract]).snapshot[0])
 
-    def set_price(
-        self, price_info: PriceInterval, contract: sj.contracts.Contract
-    ):
+    def set_price(self, price_info: PriceInterval, contract: sj.contracts.Contract):
         if price_info.price_type == PriceType.LimitUp:
             price_info.price = contract.limit_up
         elif price_info.price_type == PriceType.LimitDown:
@@ -142,16 +169,11 @@ class TouchOrder:
         return price_info
 
     def scope2price(
-        self,
-        scope_info: Scope,
-        info_name: str,
-        contract: sj.contracts.Contract
+        self, scope_info: Scope, info_name: str, contract: sj.contracts.Contract
     ):
         if not scope_info:
             scope_info.trend = (
-                Trend.Up
-                if scope_info.scopetype.endswith("Above")
-                else Trend.Down
+                Trend.Up if scope_info.scopetype.endswith("Above") else Trend.Down
             )
             ref = contract.reference
             if info_name == "ups_downs":  # 漲跌
