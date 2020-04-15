@@ -169,28 +169,32 @@ class TouchOrder:
                 scope_info.price = temp + contract.reference
         return scope_info
 
+    def adjust_codition(
+        self, condition: TouchOrderCond, contract: sj.contracts.Contract
+    ):
+        get_price = partial(self.set_price, contract=contract)
+        scope2price = partial(self.scope2price, contract=contract)
+        store_condition = StoreCond(
+            price=get_price(condition.touch_cmd.price),
+            buy_price=get_price(condition.touch_cmd.buy_price),
+            sell_price=get_price(condition.touch_cmd.sell_price),
+            high_price=get_price(condition.touch_cmd.high_price),
+            low_price=get_price(condition.touch_cmd.low_price),
+            ups_downs=scope2price(condition.touch_cmd.ups_downs, "ups_downs"),
+            scope=scope2price(condition.touch_cmd.scope, "scope"),
+            qty=condition.touch_cmd.qty,
+            sum_qty=condition.touch_cmd.sum_qty,
+            order_contract=self.contracts[condition.order_cmd.code],
+            order=condition.order_cmd.order,
+        )
+        return store_condition
+
     def set_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
         self.update_snapshot(touch_contract)
         if condition.touch_cmd.conditions:
-            get_price = partial(self.set_price, contract=touch_contract)
-            scope2price = partial(self.scope2price, contract=touch_contract)
-            store_condition = StoreCond(
-                price=get_price(condition.touch_cmd.price),
-                buy_price=get_price(condition.touch_cmd.buy_price),
-                sell_price=get_price(condition.touch_cmd.sell_price),
-                high_price=get_price(condition.touch_cmd.high_price),
-                low_price=get_price(condition.touch_cmd.low_price),
-                ups_downs=scope2price(
-                    condition.touch_cmd.ups_downs, "ups_downs"
-                ),
-                scope=scope2price(condition.touch_cmd.scope, "scope"),
-                qty=condition.touch_cmd.qty, 
-                sum_qty=condition.touch_cmd.sum_qty,
-                order_contract=self.contracts[condition.order_cmd.code],
-                order=condition.order_cmd.order,
-            )
+            store_condition = self.adjust_codition(condition, touch_contract)
         if code in self.conditions.keys():
             self.conditions[code].append(store_condition)
         else:
@@ -201,20 +205,9 @@ class TouchOrder:
 
     def delete_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
+        touch_contract = self.contracts[code]
         if condition.touch_cmd.conditions:
-            store_condition = StoreCond(
-                price=condition.touch_cmd.price,
-                buy_price=condition.touch_cmd.buy_price,
-                sell_price=condition.touch_cmd.sell_price,
-                high_price=condition.touch_cmd.high_price,
-                low_price=condition.touch_cmd.low_price,
-                ups_downs=condition.touch_cmd.ups_downs,
-                scope=condition.touch_cmd.scope,
-                qty=condition.touch_cmd.qty,
-                sum_qty=condition.touch_cmd.sum_qty,
-                order_contract=self.contracts[condition.order_cmd.code],
-                order=condition.order_cmd.order,
-            )
+            store_condition = self.adjust_codition(condition, touch_contract)
         if self.conditions.get(code, False):
             if store_condition in self.conditions[code]:
                 self.conditions[code].remove(store_condition)
