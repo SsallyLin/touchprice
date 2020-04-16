@@ -13,6 +13,8 @@ from touchprice import (
     QtyInterval,
     Scope,
     StatusInfo,
+    PriceType,
+    Trend,
 )
 
 
@@ -91,6 +93,35 @@ test_condition = [
     ],
     [TouchCond()],
 ]
+
+testcase_set_price = [
+    [PriceType.LimitDown, "limit_down"],
+    [PriceType.LimitUp, "limit_up"],
+    [PriceType.LimitPrice, ""],
+    [PriceType.Unchanged, "reference"],
+]
+
+
+@pytest.mark.parametrize("price_type, excepted", testcase_set_price)
+def test_set_price(
+    touch_order: TouchOrder, contract: Future, price_type: PriceType, excepted: float
+):
+    price_info = PriceInterval(price=9999.0, price_type=price_type, trend=Trend.Up)
+    touch_order.contracts = contract
+    res = touch_order.set_price(price_info, contract["TXFC0"])
+    assert res.price == dict(contract["TXFC0"]).get(excepted, price_info.price)
+
+
+def test_scope2price():
+    pass
+
+
+def test_update_snapshot():
+    pass
+
+
+def test_adjust_codition():
+    pass
 
 
 def test_set_condition(mocker, contract: Future, order: Order, touch_order: TouchOrder):
