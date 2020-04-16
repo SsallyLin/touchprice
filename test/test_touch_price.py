@@ -1,4 +1,5 @@
 import pytest
+import typing
 from shioaji.contracts import Future
 from shioaji.order import Order
 from shioaji.data import Snapshots, Snapshot
@@ -7,14 +8,17 @@ from touchprice import (
     TouchOrderCond,
     OrderCmd,
     TouchCmd,
-    StoreCond,
     TouchCond,
-    PriceInterval,
-    QtyInterval,
+    StoreCond,
+    PriceGap,
+    Price,
     Scope,
-    StatusInfo,
+    QtyGap,
+    Qty,
     PriceType,
+    ScopeType,
     Trend,
+    StatusInfo,
 )
 
 
@@ -59,46 +63,74 @@ def order():
     )
 
 
-test_condition = [
-    [TouchCond(price=PriceInterval(price_type="LimitUp"))],
-    [TouchCond(buy_price=PriceInterval(price=11.0, price_type="LimitDown"))],
-    [TouchCond(low_price=PriceInterval(price_type="LimitPrice"))],
-    [TouchCond(ups_downs=Scope(scope=3, scopetype="UpAbove"))],
-    [TouchCond(scope=Scope(scope=3, scopetype="DownBelow"))],
-    [TouchCond(qty=QtyInterval(qty=2, trend="Up"))],
-    [
-        TouchCond(
-            price=PriceInterval(price_type="Unchanged"),
-            ups_downs=Scope(scope=7, scopetype="UpBelow"),
-        )
-    ],
-    [
-        TouchCond(
-            buy_price=PriceInterval(price=10.0, price_type="LimitPrice"),
-            qty=QtyInterval(qty=1, trend="Down"),
-        )
-    ],
-    [
-        TouchCond(
-            scope=Scope(scope=3.5, scopetype="DownAbove"),
-            qty=QtyInterval(qty=5, trend="Equal"),
-        )
-    ],
-    [
-        TouchCond(
-            low_price=PriceInterval(price_type="Unchanged"),
-            ups_downs=Scope(scope=3, scopetype="UpAbove"),
-            sum_qty=QtyInterval(qty=100, trend="Up"),
-        )
-    ],
-    [TouchCond()],
-]
+@pytest.fixture()
+def snapshot():
+    return Snapshot(
+        ts=1586957400087000000,
+        code="TXFD0",
+        exchange="TAIFEX",
+        open=10347.0,
+        high=10463.0,
+        low=10330.0,
+        close=10450.0,
+        tick_type="Sell",
+        change_price=107.0,
+        change_rate=1.03,
+        change_type="Up",
+        average_price=10410.18,
+        volume=3,
+        total_volume=65128,
+        amount=31350,
+        total_amount=677994228,
+        yesterday_volume=27842.0,
+        buy_price=10450.0,
+        buy_volume=1710.0,
+        sell_price=10451.0,
+        sell_volume=9,
+        volume_ratio=2.34,
+    )
+
+
+# test_condition = [
+#     [TouchCond(price=PriceInterval(price_type="LimitUp"))],
+#     [TouchCond(buy_price=PriceInterval(price=11.0, price_type="LimitDown"))],
+#     [TouchCond(low_price=PriceInterval(price_type="LimitPrice"))],
+#     [TouchCond(ups_downs=Scope(scope=3, scopetype="UpAbove"))],
+#     [TouchCond(scope=Scope(scope=3, scopetype="DownBelow"))],
+#     [TouchCond(qty=QtyInterval(qty=2, trend="Up"))],
+#     [
+#         TouchCond(
+#             price=PriceInterval(price_type="Unchanged"),
+#             ups_downs=Scope(scope=7, scopetype="UpBelow"),
+#         )
+#     ],
+#     [
+#         TouchCond(
+#             buy_price=PriceInterval(price=10.0, price_type="LimitPrice"),
+#             qty=QtyInterval(qty=1, trend="Down"),
+#         )
+#     ],
+#     [
+#         TouchCond(
+#             scope=Scope(scope=3.5, scopetype="DownAbove"),
+#             qty=QtyInterval(qty=5, trend="Equal"),
+#         )
+#     ],
+#     [
+#         TouchCond(
+#             low_price=PriceInterval(price_type="Unchanged"),
+#             ups_downs=Scope(scope=3, scopetype="UpAbove"),
+#             sum_qty=QtyInterval(qty=100, trend="Up"),
+#         )
+#     ],
+#     [TouchCond()],
+# ]
 
 testcase_set_price = [
-    [PriceType.LimitDown, "limit_down"],
-    [PriceType.LimitUp, "limit_up"],
-    [PriceType.LimitPrice, ""],
-    [PriceType.Unchanged, "reference"],
+    ["LimitDown", "limit_down"],
+    ["LimitUp", "limit_up"],
+    ["LimitPrice", ""],
+    ["Unchanged", "reference"],
 ]
 
 
@@ -106,18 +138,82 @@ testcase_set_price = [
 def test_set_price(
     touch_order: TouchOrder, contract: Future, price_type: PriceType, excepted: float
 ):
-    price_info = PriceInterval(price=9999.0, price_type=price_type, trend=Trend.Up)
+    price_info = Price(price=9999.0, price_type=price_type, trend="Up")
     touch_order.contracts = contract
     res = touch_order.set_price(price_info, contract["TXFC0"])
     assert res.price == dict(contract["TXFC0"]).get(excepted, price_info.price)
 
 
-def test_scope2price():
-    pass
+testcase_scope2price = [
+    [3, "UpAbove", "ups_downs", 9826.0, "Up"],
+    [0.03, "DownBelow", "scope", 9528.31, "Down"],
+]
 
 
-def test_update_snapshot():
-    pass
+@pytest.mark.parametrize(
+    "scope, scope_type, info_name, price, trend", testcase_scope2price
+)
+def test_scope2price(
+    touch_order: TouchOrder,
+    contract: Future,
+    scope: typing.Union[int, float],
+    scope_type: str,
+    info_name: str,
+    price: float,
+    trend: str,
+):
+    scope_info = Scope(scope=scope, scope_type=scope_type)
+    res = touch_order.scope2price(scope_info, info_name, contract["TXFC0"])
+    assert res.price == price
+    assert res.trend == trend
+
+
+testcase_update_snapshot = [["TXFD0", True], ["TXFC0", False]]
+
+
+@pytest.mark.parametrize("code, in_infos", testcase_update_snapshot)
+def test_update_snapshot(
+    mocker,
+    touch_order: TouchOrder,
+    snapshot: Snapshot,
+    contract: Future,
+    code: str,
+    in_infos: bool,
+):
+    touch_order.infos = {"TXFD0": snapshot}
+    touch_order.api.snapshots = mocker.MagicMock(
+        return_value=Snapshots(
+            snapshot=[
+                Snapshot(
+                    ts=1586957400087000000,
+                    code="TXFD0",
+                    exchange="TAIFEX",
+                    open=10347.0,
+                    high=10463.0,
+                    low=10330.0,
+                    close=10450.0,
+                    tick_type="Sell",
+                    change_price=107.0,
+                    change_rate=1.03,
+                    change_type="Up",
+                    average_price=10410.18,
+                    volume=3,
+                    total_volume=65128,
+                    amount=31350,
+                    total_amount=677994228,
+                    yesterday_volume=27842.0,
+                    buy_price=10450.0,
+                    buy_volume=1710.0,
+                    sell_price=10451.0,
+                    sell_volume=9,
+                    volume_ratio=2.34,
+                )
+            ]
+        )
+    )
+    touch_order.update_snapshot(contract["TXFC0"])
+    if not in_infos:
+        assert touch_order.api.snapshots.call_count == 1
 
 
 def test_adjust_codition():
