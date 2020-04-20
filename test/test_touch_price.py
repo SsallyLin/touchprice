@@ -216,8 +216,70 @@ def test_update_snapshot(
         assert touch_order.api.snapshots.call_count == 1
 
 
-def test_adjust_codition():
-    pass
+testcase_adjust_condition = [
+    [
+        TouchCond(
+            price=Price(price=3, trend="Up"), buy_price=Price(price=3, trend="Up")
+        ),
+        2,
+        0,
+    ],
+    [TouchCond(scope=Scope(scope=3, scope_type="UpAbove")), 0, 1],
+    [TouchCond(qty=Qty(qty=2, trend="Up")), 0, 0],
+    [
+        TouchCond(
+            price=Price(price=3, trend="Up"), scope=Scope(scope=3, scope_type="UpAbove")
+        ),
+        1,
+        1,
+    ],
+    [
+        TouchCond(
+            price=Price(price=3, trend="Up"),
+            scope=Scope(scope=3, scope_type="UpAbove"),
+            qty=Qty(qty=2, trend="Up"),
+        ),
+        1,
+        1,
+    ],
+    [
+        TouchCond(
+            scope=Scope(scope=3, scope_type="UpAbove"), qty=Qty(qty=2, trend="Up")
+        ),
+        0,
+        1,
+    ],
+    [TouchCond(), 0, 0],
+]
+
+
+@pytest.mark.parametrize(
+    "condition, price_counts, scope_counts", testcase_adjust_condition
+)
+def test_adjust_codition(
+    mocker,
+    touch_order: TouchOrder,
+    contract: Future,
+    order: Order,
+    condition: TouchCond,
+    price_counts: int,
+    scope_counts: int,
+):
+    touchorder_cond = TouchOrderCond(
+        touch_cmd=TouchCmd(code="TXFC0", conditions=condition),
+        order_cmd=OrderCmd(code="TXFC0", order=order),
+    )
+    touch_order.contracts = contract
+    contract = touch_order.contracts["TXFC0"]
+    touch_order.set_price = mocker.MagicMock(
+        return_value=PriceGap(price=10, trend="Up")
+    )
+    touch_order.scope2price = mocker.MagicMock(
+        return_value=PriceGap(price=10, trend="Up")
+    )
+    touch_order.adjust_codition(touchorder_cond, contract)
+    assert touch_order.set_price.call_count == price_counts
+    assert touch_order.scope2price.call_count == scope_counts
 
 
 def test_set_condition(mocker, contract: Future, order: Order, touch_order: TouchOrder):

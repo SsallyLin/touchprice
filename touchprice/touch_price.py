@@ -1,6 +1,7 @@
 import shioaji as sj
 import typing
-from pydantic import BaseModel, StrictInt
+from .core import Base, DisplayCore, MetaContent, Dataset, UpdateContent
+from pydantic import StrictInt
 from functools import partial
 from enum import Enum
 
@@ -25,7 +26,7 @@ class ScopeType(str, Enum):
     DownBelow = "DownBelow"  # 跌幅低於
 
 
-class PriceGap(BaseModel):
+class PriceGap(Base):
     price: float
     trend: Trend
 
@@ -54,7 +55,7 @@ class Scope(PriceGap):
         super().__init__(**dict(scope=scope, scope_type=scope_type))
 
 
-class QtyGap(BaseModel):
+class QtyGap(Base):
     qty: int
     trend: Trend
 
@@ -63,7 +64,7 @@ class Qty(QtyGap):
         super().__init__(**dict(qty=qty, trend=trend))
 
 
-class TouchCond(BaseModel):
+class TouchCond(Base):
     price: Price = None
     buy_price: Price = None
     sell_price: Price = None
@@ -101,7 +102,7 @@ class TouchCond(BaseModel):
         )
 
 
-class TouchCmd(BaseModel):
+class TouchCmd(Base):
     code: str
     conditions: TouchCond
 
@@ -109,7 +110,7 @@ class TouchCmd(BaseModel):
         super().__init__(**dict(code=code, conditions=conditions))
 
 
-class OrderCmd(BaseModel):
+class OrderCmd(Base):
     code: str
     order: sj.order.Order
 
@@ -117,7 +118,7 @@ class OrderCmd(BaseModel):
         super().__init__(**dict(code=code, order=order))
 
 
-class TouchOrderCond(BaseModel):
+class TouchOrderCond(Base):
     touch_cmd: TouchCmd
     order_cmd: OrderCmd
 
@@ -125,7 +126,7 @@ class TouchOrderCond(BaseModel):
         super().__init__(**dict(touch_cmd=touch_cmd, order_cmd=order_cmd))
 
 
-class StoreCond(BaseModel):
+class StoreCond(Base):
     price: PriceGap = None
     buy_price: PriceGap = None
     sell_price: PriceGap = None
@@ -140,7 +141,7 @@ class StoreCond(BaseModel):
     excuted: bool = False
 
 
-class StatusInfo(BaseModel):
+class StatusInfo(Base):
     close: float
     buy_price: float
     sell_price: float
@@ -200,38 +201,36 @@ class TouchOrder:
                 else -ref * scope_info.scope
             )
             price = temp + contract.reference
-        price = PriceGap(
-            price=price,
-            trend=trend,
-        )
+        price = PriceGap(price=price, trend=trend)
         return price
 
     def adjust_codition(
-        self, condition: TouchOrderCond, contract: sj.contracts.Contract
+        self, conditions: TouchOrderCond, contract: sj.contracts.Contract
     ):
         get_price = partial(self.set_price, contract=contract)
         scope2price = partial(self.scope2price, contract=contract)
-        store_condition = StoreCond(
-            price=get_price(condition.touch_cmd.price),
-            buy_price=get_price(condition.touch_cmd.buy_price),
-            sell_price=get_price(condition.touch_cmd.sell_price),
-            high_price=get_price(condition.touch_cmd.high_price),
-            low_price=get_price(condition.touch_cmd.low_price),
-            ups_downs=scope2price(condition.touch_cmd.ups_downs, "ups_downs"),
-            scope=scope2price(condition.touch_cmd.scope, "scope"),
-            qty=condition.touch_cmd.qty,
-            sum_qty=condition.touch_cmd.sum_qty,
-            order_contract=self.contracts[condition.order_cmd.code],
-            order=condition.order_cmd.order,
-        )
-        return store_condition
+        tconds_dict = conditions.touch_cmd.conditions.dict()
+        use_get_price = ["price", "buy_price", "sell_price", "high_price", "low_price"]
+        use_scope2 = ["ups_downs", "scope"]
+        temp_dict = {}
+        for key, value in tconds_dict.items():
+            if key in use_get_price:
+                temp_dict[key] = get_price(value)
+            elif key in use_scope2:
+                temp_dict[key] = scope2price(value, key)
+            else:
+                temp_dict[key] = value
+        temp_dict["order_contract"] = self.contracts[conditions.order_cmd.code]
+        temp_dict["order"] = (conditions.order_cmd.order)
+        return StoreCond(**temp_dict)
 
     def set_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
         self.update_snapshot(touch_contract)
-        if condition.touch_cmd.conditions:
-            store_condition = self.adjust_codition(condition, touch_contract)
+        touch_condition = condition.touch_cmd.conditions
+        if touch_condition:
+            store_condition = self.adjust_codition(touch_condition, touch_contract)
         if code in self.conditions.keys():
             self.conditions[code].append(store_condition)
         else:
