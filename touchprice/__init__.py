@@ -8,11 +8,8 @@ from .touch_price import (
     StoreCond,
     PriceGap,
     Price,
-    Scope,
-    QtyGap,
-    Qty,
     PriceType,
-    ScopeType,
     Trend,
     StatusInfo,
+    PriceTouchCond,
 )
