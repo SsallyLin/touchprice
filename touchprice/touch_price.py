@@ -156,9 +156,9 @@ class TouchOrder:
         if condition.touch_cmd.conditions:
             store_condition = self.adjust_codition(condition, touch_contract)
         if self.conditions.get(code, False):
-            if store_condition in self.conditions["touch_condition"][code]:
-                self.conditions["touch_condition"][code].remove(store_condition)
-                return self.conditions["touch_condition"][code]
+            if store_condition in self.conditions[code]:
+                self.conditions[code].remove(store_condition)
+                return self.conditions[code]
 
     def touch_price(self, price_info: Price, close: float):
         if price_info.trend == Trend.Up:
@@ -178,14 +178,14 @@ class TouchOrder:
         if conditions:
             for cond in conditions:
                 if all(
-                    self.touch_price(cond.price_conditions.price, self.infos[code].close)
+                    self.touch_price(
+                        cond.price_conditions.price, self.infos[code].close
+                    )
                     for con in conditions
                 ):
-                    self.api.place_order(
-                        cond.order_contract, cond.order
-                    )
+                    self.api.place_order(cond.order_contract, cond.order)
 
-    def integration(self, topic, quote):
+    def integration(self, topic: str, quote: dict):
         if topic.startswith("MKT/"):
             code = topic.split("/")[-1]
             if code in self.infos.keys():

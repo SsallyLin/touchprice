@@ -210,17 +210,19 @@ def test_set_condition(mocker, contract: Future, order: Order, touch_order: Touc
     assert not res == False
 
 
-testcase_delete_condition = [["TXFC0", False], ["TXFD0", False]]
+testcase_delete_condition = [["TXFC0", 0], ["TXFD0", 1]]
 
 
-@pytest.mark.parametrize("contract_code, deleted", testcase_delete_condition)
+@pytest.mark.parametrize("contract_code, condition_len", testcase_delete_condition)
 def test_delete_condition(
+    mocker,
     contract: Future,
     order: Order,
     touch_order: TouchOrder,
     contract_code: str,
-    deleted: bool,
+    condition_len: int,
 ):
+    touch_order.contracts = contract
     touch_cond = TouchOrderCond(
         touch_cmd=TouchCmd(
             code="TXFC0",
@@ -230,31 +232,21 @@ def test_delete_condition(
         ),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
-    cond_key = touch_cond.touch_cmd.code
-    touch_order.contracts = contract
     touch_order.conditions = {
         contract_code: [
             StoreCond(
-                price_conditions=PriceTouchCond(price=PriceGap(price=1.0, trend="Up")),
-                order_contract=touch_order.contracts[cond_key],
+                price_conditions=PriceTouchCond(price=PriceGap(price=11.0, trend="Up")),
+                order_contract=touch_order.contracts["TXFC0"],
                 order=touch_cond.order_cmd.order,
                 excuted=False,
             )
         ]
     }
-    touch_order.delete_condition(touch_cond)
-    storecode = StoreCond(
-        price=touch_cond.touch_cmd.price,
-        action=touch_cond.order_cmd.order.action,
-        order_contract=contract[touch_cond.order_cmd.code],
-        order=touch_cond.order_cmd.order,
-        excuted=False,
+    touch_order.adjust_codition = mocker.MagicMock(
+        return_value=touch_order.conditions[contract_code][0]
     )
-    if touch_order.conditions.get(cond_key, False):
-        res = storecode in touch_order.conditions.get(cond_key)
-    else:
-        res = False
-    assert res == deleted
+    touch_order.delete_condition(touch_cond)
+    assert len(touch_order.conditions[contract_code]) == condition_len
 
 
 testcase_touch = [
@@ -299,3 +291,12 @@ def test_touch(
     touch_order.touch(code)
     assert touch_order.api.place_order.call_count == order_count
 
+
+testcase_integration = [["MKT/2890", 1], ["QUT/2890", 1], ["XXX/XX", 0]]
+
+
+@pytest.mark.parametrize("topic, touch_count", testcase_integration)
+def test_integration(touch_order: TouchOrder, topic: str, touch_count: int):
+    quote = {"close": 11, "VolSum": 1, "Volume": 1}
+    touch_order.integration(topic, quote)
+    assert touch_order.touch.call_count == touch_count
