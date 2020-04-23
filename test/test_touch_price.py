@@ -8,14 +8,12 @@ from touchprice import (
     TouchOrderCond,
     OrderCmd,
     TouchCmd,
-    TouchCond,
     StoreCond,
     PriceGap,
     Price,
     PriceType,
     Trend,
     StatusInfo,
-    PriceTouchCond,
 )
 
 
@@ -154,23 +152,20 @@ def test_update_snapshot(
         assert touch_order.api.snapshots.call_count == 1
 
 
-testcase_adjust_condition = [
-    [TouchCond(price=Price(price=3, trend="Up")), 1],
-    [TouchCond(), 0],
-]
+testcase_adjust_condition = [[Price(price=3, trend="Up"), 1], [None, 0]]
 
 
 @pytest.mark.parametrize("condition, count", testcase_adjust_condition)
-def test_adjust_codition(
+def test_adjust_condition(
     mocker,
     touch_order: TouchOrder,
     contract: Future,
     order: Order,
-    condition: TouchCond,
+    condition: Price,
     count: int,
 ):
     touchorder_cond = TouchOrderCond(
-        touch_cmd=TouchCmd(code="TXFC0", conditions=condition),
+        touch_cmd=TouchCmd(code="TXFC0", price=condition),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
     touch_order.contracts = contract
@@ -178,29 +173,36 @@ def test_adjust_codition(
     touch_order.set_price = mocker.MagicMock(
         return_value=PriceGap(price=10, trend="Up")
     )
-    touch_order.adjust_codition(touchorder_cond, contract)
+    touch_order.adjust_condition(touchorder_cond, contract)
     assert touch_order.set_price.call_count == count
 
 
-def test_set_condition(mocker, contract: Future, order: Order, touch_order: TouchOrder):
+testcase_set_condition = ["TXFC0", "TXFD0"]
+
+
+@pytest.mark.parametrize("code", testcase_set_condition)
+def test_set_condition(
+    mocker, contract: Future, order: Order, touch_order: TouchOrder, code: str
+):
+    touch_order.contracts = {"TXFC0": contract["TXFC0"], "TXFD0": contract["TXFC0"]}
+    store_cond = StoreCond(
+        price=PriceGap(price=10, trend="Up"),
+        order_contract=touch_order.contracts["TXFC0"],
+        order=order,
+    )
     condition = TouchOrderCond(
-        touch_cmd=TouchCmd(
-            code="TXFC0",
-            conditions=TouchCond(
-                price=PriceGap(price=11.0, price_type="LimitPrice", trend="Up")
-            ),
-        ),
+        touch_cmd=TouchCmd(code=code, price=Price(price=10, trend="Up")),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
-    touch_order.contracts = contract
+    touch_order.conditions = {"TXFC0": [store_cond]}
     touch_order.update_snapshot = mocker.MagicMock()
-    touch_order.adjust_codition = mocker.MagicMock()
+    touch_order.adjust_condition = mocker.MagicMock()
     touch_order.set_condition(condition)
     touch_order.update_snapshot.assert_called_once_with(
         touch_order.contracts[condition.touch_cmd.code]
     )
-    touch_order.adjust_codition.assert_called_with(
-        condition.touch_cmd.conditions, touch_order.contracts[condition.touch_cmd.code]
+    touch_order.adjust_condition.assert_called_with(
+        condition, touch_order.contracts[condition.touch_cmd.code]
     )
     touch_order.api.quote.subscribe.assert_called_with(
         touch_order.contracts[condition.touch_cmd.code], quote_type="bidask"
@@ -226,23 +228,21 @@ def test_delete_condition(
     touch_cond = TouchOrderCond(
         touch_cmd=TouchCmd(
             code="TXFC0",
-            conditions=TouchCond(
-                price=PriceGap(price=11.0, price_type="LimitPrice", trend="Up")
-            ),
+            price=PriceGap(price=11.0, price_type="LimitPrice", trend="Up"),
         ),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
     touch_order.conditions = {
         contract_code: [
             StoreCond(
-                price_conditions=PriceTouchCond(price=PriceGap(price=11.0, trend="Up")),
+                price=PriceGap(price=11.0, trend="Up"),
                 order_contract=touch_order.contracts["TXFC0"],
                 order=touch_cond.order_cmd.order,
                 excuted=False,
             )
         ]
     }
-    touch_order.adjust_codition = mocker.MagicMock(
+    touch_order.adjust_condition = mocker.MagicMock(
         return_value=touch_order.conditions[contract_code][0]
     )
     touch_order.delete_condition(touch_cond)
@@ -270,7 +270,7 @@ def test_touch(
     touch_order.conditions = {
         "TXFD0": [
             StoreCond(
-                price_conditions=PriceTouchCond(price=price),
+                price=price,
                 order_contract=contract["TXFC0"],
                 order=order,
                 excuted=False,
@@ -296,7 +296,21 @@ testcase_integration = [["MKT/2890", 1], ["QUT/2890", 1], ["XXX/XX", 0]]
 
 
 @pytest.mark.parametrize("topic, touch_count", testcase_integration)
-def test_integration(touch_order: TouchOrder, topic: str, touch_count: int):
-    quote = {"close": 11, "VolSum": 1, "Volume": 1}
+def test_integration(mocker, touch_order: TouchOrder, topic: str, touch_count: int):
+    quote = {"Close": 12, "VolSum": 1, "Volume": 1, "BidPrice": [11], "AskPrice": [11]}
+    touch_order.infos = {
+        "2890": StatusInfo(
+            close=11,
+            buy_price=11,
+            sell_price=11,
+            high=11,
+            low=11,
+            change_price=1,
+            change_rate=1.0,
+            volume=1,
+            total_volume=10,
+        )
+    }
+    touch_order.touch = mocker.MagicMock()
     touch_order.integration(topic, quote)
     assert touch_order.touch.call_count == touch_count

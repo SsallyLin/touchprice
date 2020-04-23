@@ -38,19 +38,12 @@ class Price(PriceGap):
         super().__init__(**dict(trend=trend, price=price, price_type=price_type))
 
 
-class TouchCond(Base):
-    price: Price = None
-
-    def __init__(self, price: Price = None):
-        super().__init__(**dict(price=price))
-
-
 class TouchCmd(Base):
     code: str
-    conditions: TouchCond
+    price: Price = None
 
-    def __init__(self, code: str, conditions: TouchCond):
-        super().__init__(**dict(code=code, conditions=conditions))
+    def __init__(self, code: str, price: price = None):
+        super().__init__(**dict(code=code, price=price))
 
 
 class OrderCmd(Base):
@@ -69,12 +62,8 @@ class TouchOrderCond(Base):
         super().__init__(**dict(touch_cmd=touch_cmd, order_cmd=order_cmd))
 
 
-class PriceTouchCond(Base):
-    price: PriceGap = None
-
-
 class StoreCond(Base):
-    price_conditions: PriceTouchCond = None
+    price: PriceGap = None
     order_contract: sj.contracts.Contract
     order: sj.Order
     excuted: bool = False
@@ -96,7 +85,7 @@ def get_contracts(api: sj.Shioaji):
     contracts = {
         code: contract
         for name, iter_contract in api.Contracts
-        for code, contract in iter_contract._code1contract.items()
+        for code, contract in iter_contract._code2contract.items()
     }
     return contracts
 
@@ -122,39 +111,38 @@ class TouchOrder:
             price_info.price = contract.reference
         return price_info
 
-    def adjust_codition(
-        self, conditions: TouchOrderCond, contract: sj.contracts.Contract
+    def adjust_condition(
+        self, condition: TouchOrderCond, contract: sj.contracts.Contract
     ):
         get_price = partial(self.set_price, contract=contract)
-        tconds_dict = conditions.touch_cmd.conditions.dict()
-        temp_dict = {}
+        tconds_dict = condition.touch_cmd.dict()
+        tconds_dict.pop("code")
+        # TODO: if tonds_dict is none how to return
         if tconds_dict:
+            # TODO: multiconds how to match func of change price struct
             for key, value in tconds_dict.items():
-                temp_dict["price_conditions"] = {key: get_price(value)}
-            temp_dict["order_contract"] = self.contracts[conditions.order_cmd.code]
-            temp_dict["order"] = conditions.order_cmd.order
-            return StoreCond(**temp_dict)
+                tconds_dict[key] = get_price(value)
+            tconds_dict["order_contract"] = self.contracts[condition.order_cmd.code]
+            tconds_dict["order"] = condition.order_cmd.order
+            return StoreCond(**tconds_dict)
 
     def set_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
         self.update_snapshot(touch_contract)
-        touch_condition = condition.touch_cmd.conditions
-        if touch_condition:
-            store_condition = self.adjust_codition(touch_condition, touch_contract)
-            if code in self.conditions.keys():
-                self.conditions[code].append(store_condition)
-            else:
-                self.conditions[code] = [store_condition]
-            self.api.quote.subscribe(touch_contract, quote_type="tick")
-            self.api.quote.subscribe(touch_contract, quote_type="bidask")
-            self.api.quote.set_quote_callback(self.integration)
+        store_condition = self.adjust_condition(condition, touch_contract)
+        if code in self.conditions.keys():
+            self.conditions[code].append(store_condition)
+        else:
+            self.conditions[code] = [store_condition]
+        self.api.quote.subscribe(touch_contract, quote_type="tick")
+        self.api.quote.subscribe(touch_contract, quote_type="bidask")
+        self.api.quote.set_quote_callback(self.integration)
 
     def delete_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
-        if condition.touch_cmd.conditions:
-            store_condition = self.adjust_codition(condition, touch_contract)
+        store_condition = self.adjust_condition(condition, touch_contract)
         if self.conditions.get(code, False):
             if store_condition in self.conditions[code]:
                 self.conditions[code].remove(store_condition)
@@ -177,9 +165,10 @@ class TouchOrder:
         conditions = self.conditions.get(code, False)
         if conditions:
             for cond in conditions:
+                # TODO: add qty match func
                 if all(
                     self.touch_price(
-                        cond.price_conditions.price, self.infos[code].close
+                        cond.price, self.infos[code].close
                     )
                     for con in conditions
                 ):
