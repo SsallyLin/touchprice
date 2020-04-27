@@ -41,9 +41,30 @@ class Price(PriceGap):
 class TouchCmd(Base):
     code: str
     price: Price = None
+    buy_price: Price = None
+    sell_price: Price = None
+    high_price: Price = None
+    low_price: Price = None
 
-    def __init__(self, code: str, price: price = None):
-        super().__init__(**dict(code=code, price=price))
+    def __init__(
+        self,
+        code: str,
+        price: price = None,
+        buy_price: Price = None,
+        sell_price: Price = None,
+        high_price: Price = None,
+        low_price: Price = None,
+    ):
+        super().__init__(
+            **dict(
+                code=code,
+                price=price,
+                buy_price=buy_price,
+                sell_price=sell_price,
+                high_price=high_price,
+                low_price=low_price,
+            )
+        )
 
 
 class OrderCmd(Base):
@@ -64,6 +85,10 @@ class TouchOrderCond(Base):
 
 class StoreCond(Base):
     price: PriceGap = None
+    buy_price: PriceGap = None
+    sell_price: PriceGap = None
+    high_price: PriceGap = None
+    low_price: PriceGap = None
     order_contract: sj.contracts.Contract
     order: sj.Order
     excuted: bool = False
@@ -131,19 +156,20 @@ class TouchOrder:
         touch_contract = self.contracts[code]
         self.update_snapshot(touch_contract)
         store_condition = self.adjust_condition(condition, touch_contract)
-        if code in self.conditions.keys():
-            self.conditions[code].append(store_condition)
-        else:
-            self.conditions[code] = [store_condition]
-        self.api.quote.subscribe(touch_contract, quote_type="tick")
-        self.api.quote.subscribe(touch_contract, quote_type="bidask")
-        self.api.quote.set_quote_callback(self.integration)
+        if store_condition:
+            if code in self.conditions.keys():
+                self.conditions[code].append(store_condition)
+            else:
+                self.conditions[code] = [store_condition]
+            self.api.quote.subscribe(touch_contract, quote_type="tick")
+            self.api.quote.subscribe(touch_contract, quote_type="bidask")
+            self.api.quote.set_quote_callback(self.integration)
 
     def delete_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
         store_condition = self.adjust_condition(condition, touch_contract)
-        if self.conditions.get(code, False):
+        if self.conditions.get(code, False) and store_condition:
             if store_condition in self.conditions[code]:
                 self.conditions[code].remove(store_condition)
                 return self.conditions[code]
@@ -167,9 +193,7 @@ class TouchOrder:
             for cond in conditions:
                 # TODO: add qty match func
                 if all(
-                    self.touch_price(
-                        cond.price, self.infos[code].close
-                    )
+                    self.touch_price(cond.price, self.infos[code].close)
                     for con in conditions
                 ):
                     self.api.place_order(cond.order_contract, cond.order)
