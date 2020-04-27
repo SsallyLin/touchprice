@@ -1,6 +1,6 @@
 import shioaji as sj
 import typing
-from .core import Base, DisplayCore, MetaContent, Dataset, UpdateContent
+from .core import Base
 from pydantic import StrictInt
 from functools import partial
 from enum import Enum
@@ -17,13 +17,6 @@ class PriceType(str, Enum):
     LimitUp = "LimitUp"  # 漲停
     Unchanged = "Unchanged"  # 平盤
     LimitDown = "LimitDown"  # 跌停
-
-
-class ScopeType(str, Enum):
-    UpAbove = "UpAbove"  # 漲幅超過
-    DownAbove = "DownAbove"  # 跌幅超過
-    UpBelow = "UpBelow"  # 漲幅低於
-    DownBelow = "DownBelow"  # 跌幅低於
 
 
 class PriceGap(Base):
@@ -45,69 +38,49 @@ class Price(PriceGap):
         super().__init__(**dict(trend=trend, price=price, price_type=price_type))
 
 
-class Scope(PriceGap):
-    scope: typing.Union[StrictInt, float]
-    scope_type: ScopeType
-    price: float = 0.0
-    trend: Trend = None
-
-    def __init__(self, scope: typing.Union[StrictInt, float], scope_type: ScopeType):
-        super().__init__(**dict(scope=scope, scope_type=scope_type))
-
-
 class QtyGap(Base):
     qty: int
     trend: Trend
+
 
 class Qty(QtyGap):
     def __init__(self, qty: int, trend: Trend):
         super().__init__(**dict(qty=qty, trend=trend))
 
 
-class TouchCond(Base):
-    price: Price = None
+class TouchCmd(Base):
+    code: str
+    close: Price = None
     buy_price: Price = None
     sell_price: Price = None
-    high_price: Price = None
-    low_price: Price = None
-    ups_downs: Scope = None
-    scope: Scope = None
-    qty: Qty = None
-    sum_qty: Qty = None
+    high: Price = None
+    low: Price = None
+    volume: Qty = None
+    total_volume: Qty = None
 
     def __init__(
         self,
-        price: Price = None,
+        code: str,
+        close: Price = None,
         buy_price: Price = None,
         sell_price: Price = None,
-        high_price: Price = None,
-        low_price: Price = None,
-        ups_downs: Price = None,
-        scope: Price = None,
-        qty: Qty = None,
-        sum_qty: Qty = None,
+        high: Price = None,
+        low: Price = None,
+        volume: Qty = None,
+        total_volume: Qty = None,
     ):
         super().__init__(
             **dict(
-                price=price,
+                code=code,
+                close=close,
                 buy_price=buy_price,
                 sell_price=sell_price,
-                high_price=high_price,
-                low_price=low_price,
-                ups_downs=ups_downs,
-                scope=scope,
-                qty=qty,
-                sum_qty=sum_qty,
+                high=high,
+                low=low,
+                volume=volume,
+                total_volume=total_volume,
             )
         )
-
-
-class TouchCmd(Base):
-    code: str
-    conditions: TouchCond
-
-    def __init__(self, code: str, conditions: TouchCond):
-        super().__init__(**dict(code=code, conditions=conditions))
 
 
 class OrderCmd(Base):
@@ -127,15 +100,13 @@ class TouchOrderCond(Base):
 
 
 class StoreCond(Base):
-    price: PriceGap = None
+    close: PriceGap = None
     buy_price: PriceGap = None
     sell_price: PriceGap = None
-    high_price: PriceGap = None
-    low_price: PriceGap = None
-    ups_downs: PriceGap = None
-    scope: PriceGap = None
-    qty: QtyGap = None
-    sum_qty: QtyGap = None
+    high: PriceGap = None
+    low: PriceGap = None
+    volume: QtyGap = None
+    total_volume: QtyGap = None
     order_contract: sj.contracts.Contract
     order: sj.Order
     excuted: bool = False
@@ -157,7 +128,7 @@ def get_contracts(api: sj.Shioaji):
     contracts = {
         code: contract
         for name, iter_contract in api.Contracts
-        for code, contract in iter_contract._code1contract.items()
+        for code, contract in iter_contract._code2contract.items()
     }
     return contracts
 
@@ -183,76 +154,76 @@ class TouchOrder:
             price_info.price = contract.reference
         return price_info
 
-    def scope2price(
-        self, scope_info: Scope, info_name: str, contract: sj.contracts.Contract
-    ):
-        trend = Trend.Up if scope_info.scope_type.endswith("Above") else Trend.Down
-        ref = contract.reference
-        if info_name == "ups_downs":  # 漲跌
-            price = (
-                ref + scope_info.scope
-                if scope_info.scope_type.startswith("Up")
-                else ref - scope_info.scope
-            )
-        else:  # 幅度
-            temp = (
-                ref * scope_info.scope
-                if scope_info.scope_type.startswith("Up")
-                else -ref * scope_info.scope
-            )
-            price = temp + contract.reference
-        price = PriceGap(price=price, trend=trend)
-        return price
-
-    def adjust_codition(
-        self, conditions: TouchOrderCond, contract: sj.contracts.Contract
+    def adjust_condition(
+        self, condition: TouchOrderCond, contract: sj.contracts.Contract
     ):
         get_price = partial(self.set_price, contract=contract)
-        scope2price = partial(self.scope2price, contract=contract)
-        tconds_dict = conditions.touch_cmd.conditions.dict()
-        use_get_price = ["price", "buy_price", "sell_price", "high_price", "low_price"]
-        use_scope2 = ["ups_downs", "scope"]
-        temp_dict = {}
-        for key, value in tconds_dict.items():
-            if key in use_get_price:
-                temp_dict[key] = get_price(value)
-            elif key in use_scope2:
-                temp_dict[key] = scope2price(value, key)
-            else:
-                temp_dict[key] = value
-        temp_dict["order_contract"] = self.contracts[conditions.order_cmd.code]
-        temp_dict["order"] = (conditions.order_cmd.order)
-        return StoreCond(**temp_dict)
+        tconds_dict = condition.touch_cmd.dict()
+        tconds_dict.pop("code")
+        if tconds_dict:
+            for key, value in tconds_dict.items():
+                if key not in ["volume", "total_volume"]:
+                    tconds_dict[key] = get_price(value)
+            tconds_dict["order_contract"] = self.contracts[condition.order_cmd.code]
+            tconds_dict["order"] = condition.order_cmd.order
+            return StoreCond(**tconds_dict)
 
     def set_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
         self.update_snapshot(touch_contract)
-        touch_condition = condition.touch_cmd.conditions
-        if touch_condition:
-            store_condition = self.adjust_codition(touch_condition, touch_contract)
-        if code in self.conditions.keys():
-            self.conditions[code].append(store_condition)
-        else:
-            self.conditions[code] = [store_condition]
-        self.api.quote.subscribe(touch_contract, quote_type="tick")
-        self.api.quote.subscribe(touch_contract, quote_type="bidask")
-        self.api.quote.set_quote_callback(self.integration)
+        store_condition = self.adjust_condition(condition, touch_contract)
+        if store_condition:
+            if code in self.conditions.keys():
+                self.conditions[code].append(store_condition)
+            else:
+                self.conditions[code] = [store_condition]
+            self.api.quote.subscribe(touch_contract, quote_type="tick")
+            self.api.quote.subscribe(touch_contract, quote_type="bidask")
+            self.api.quote.set_quote_callback(self.integration)
 
     def delete_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
-        if condition.touch_cmd.conditions:
-            store_condition = self.adjust_codition(condition, touch_contract)
-        if self.conditions.get(code, False):
+        store_condition = self.adjust_condition(condition, touch_contract)
+        if self.conditions.get(code, False) and store_condition:
             if store_condition in self.conditions[code]:
                 self.conditions[code].remove(store_condition)
                 return self.conditions[code]
 
-    def touch(self, code: str):
-        pass
+    def touch_cond(self, info: typing.Dict, value: typing.Union[StrictInt, float]):
+        trend = info.pop("trend")
+        if len(info) == 1:
+            data = info[list(info.keys())[0]]
+            if trend == Trend.Up:
+                if data <= value:
+                    return True
+            elif trend == Trend.Down:
+                if data >= value:
+                    return True
+            elif trend == Trend.Equal:
+                if data == value:
+                    return True
+            else:
+                return False
 
-    def integration(self, topic, quote):
+    def touch(self, code: str):
+        conditions = self.conditions.get(code, False)
+        if conditions:
+            info = self.infos[code].dict()
+            for num, conds in enumerate(conditions):
+                if not conds.excuted:
+                    cond = conds.dict()
+                    order = cond.pop("order")
+                    order_contract = cond.pop("order_contract")
+                    cond.pop("excuted")
+                    if all(
+                        self.touch_cond(value, info[key]) for key, value in cond.items()
+                    ):
+                        self.conditions[code][num].excuted = True
+                        self.api.place_order(order_contract, order_contract)
+
+    def integration(self, topic: str, quote: dict):
         if topic.startswith("MKT/"):
             code = topic.split("/")[-1]
             if code in self.infos.keys():
