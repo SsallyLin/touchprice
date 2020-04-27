@@ -165,7 +165,7 @@ def test_adjust_condition(
     count: int,
 ):
     touchorder_cond = TouchOrderCond(
-        touch_cmd=TouchCmd(code="TXFC0", price=condition),
+        touch_cmd=TouchCmd(code="TXFC0", close=condition),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
     touch_order.contracts = contract
@@ -186,12 +186,12 @@ def test_set_condition(
 ):
     touch_order.contracts = {"TXFC0": contract["TXFC0"], "TXFD0": contract["TXFC0"]}
     store_cond = StoreCond(
-        price=PriceGap(price=10, trend="Up"),
+        close=PriceGap(price=10, trend="Up"),
         order_contract=touch_order.contracts["TXFC0"],
         order=order,
     )
     condition = TouchOrderCond(
-        touch_cmd=TouchCmd(code=code, price=Price(price=10, trend="Up")),
+        touch_cmd=TouchCmd(code=code, close=Price(price=10, trend="Up")),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
     touch_order.conditions = {"TXFC0": [store_cond]}
@@ -228,7 +228,7 @@ def test_delete_condition(
     touch_cond = TouchOrderCond(
         touch_cmd=TouchCmd(
             code="TXFC0",
-            price=PriceGap(price=11.0, price_type="LimitPrice", trend="Up"),
+            close=PriceGap(price=11.0, price_type="LimitPrice", trend="Up"),
         ),
         order_cmd=OrderCmd(code="TXFC0", order=order),
     )
@@ -270,7 +270,7 @@ def test_touch(
     touch_order.conditions = {
         "TXFD0": [
             StoreCond(
-                price=price,
+                close=price,
                 order_contract=contract["TXFC0"],
                 order=order,
                 excuted=False,

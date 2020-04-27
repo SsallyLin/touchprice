@@ -38,31 +38,47 @@ class Price(PriceGap):
         super().__init__(**dict(trend=trend, price=price, price_type=price_type))
 
 
+class QtyGap(Base):
+    qty: int
+    trend: Trend
+
+
+class Qty(QtyGap):
+    def __init__(self, qty: int, trend: Trend):
+        super().__init__(**dict(qty=qty, trend=trend))
+
+
 class TouchCmd(Base):
     code: str
-    price: Price = None
+    close: Price = None
     buy_price: Price = None
     sell_price: Price = None
-    high_price: Price = None
-    low_price: Price = None
+    high: Price = None
+    low: Price = None
+    volume: Qty = None
+    total_volume: Qty = None
 
     def __init__(
         self,
         code: str,
-        price: price = None,
+        close: Price = None,
         buy_price: Price = None,
         sell_price: Price = None,
-        high_price: Price = None,
-        low_price: Price = None,
+        high: Price = None,
+        low: Price = None,
+        volume: Qty = None,
+        total_volume: Qty = None,
     ):
         super().__init__(
             **dict(
                 code=code,
-                price=price,
+                close=close,
                 buy_price=buy_price,
                 sell_price=sell_price,
-                high_price=high_price,
-                low_price=low_price,
+                high=high,
+                low=low,
+                volume=volume,
+                total_volume=total_volume,
             )
         )
 
@@ -84,11 +100,13 @@ class TouchOrderCond(Base):
 
 
 class StoreCond(Base):
-    price: PriceGap = None
+    close: PriceGap = None
     buy_price: PriceGap = None
     sell_price: PriceGap = None
-    high_price: PriceGap = None
-    low_price: PriceGap = None
+    high: PriceGap = None
+    low: PriceGap = None
+    volume: QtyGap = None
+    total_volume: QtyGap = None
     order_contract: sj.contracts.Contract
     order: sj.Order
     excuted: bool = False
@@ -142,11 +160,10 @@ class TouchOrder:
         get_price = partial(self.set_price, contract=contract)
         tconds_dict = condition.touch_cmd.dict()
         tconds_dict.pop("code")
-        # TODO: if tonds_dict is none how to return
         if tconds_dict:
-            # TODO: multiconds how to match func of change price struct
             for key, value in tconds_dict.items():
-                tconds_dict[key] = get_price(value)
+                if key not in ["volume", "total_volume"]:
+                    tconds_dict[key] = get_price(value)
             tconds_dict["order_contract"] = self.contracts[condition.order_cmd.code]
             tconds_dict["order"] = condition.order_cmd.order
             return StoreCond(**tconds_dict)
@@ -174,29 +191,37 @@ class TouchOrder:
                 self.conditions[code].remove(store_condition)
                 return self.conditions[code]
 
-    def touch_price(self, price_info: Price, close: float):
-        if price_info.trend == Trend.Up:
-            if price_info.price <= close:
-                return True
-        elif price_info.trend == Trend.Down:
-            if price_info.price >= close:
-                return True
-        elif price_info.trend == Trend.Equal:
-            if price_info.price == close:
-                return True
-        else:
-            return False
+    def touch_cond(self, info: typing.Dict, value: typing.Union[StrictInt, float]):
+        trend = info.pop("trend")
+        if len(info) == 1:
+            data = info[list(info.keys())[0]]
+            if trend == Trend.Up:
+                if data <= value:
+                    return True
+            elif trend == Trend.Down:
+                if data >= value:
+                    return True
+            elif trend == Trend.Equal:
+                if data == value:
+                    return True
+            else:
+                return False
 
     def touch(self, code: str):
         conditions = self.conditions.get(code, False)
         if conditions:
-            for cond in conditions:
-                # TODO: add qty match func
-                if all(
-                    self.touch_price(cond.price, self.infos[code].close)
-                    for con in conditions
-                ):
-                    self.api.place_order(cond.order_contract, cond.order)
+            info = self.infos[code].dict()
+            for num, conds in enumerate(conditions):
+                if not conds.excuted:
+                    cond = conds.dict()
+                    order = cond.pop("order")
+                    order_contract = cond.pop("order_contract")
+                    cond.pop("excuted")
+                    if all(
+                        self.touch_cond(value, info[key]) for key, value in cond.items()
+                    ):
+                        self.conditions[code][num].excuted = True
+                        self.api.place_order(order_contract, order_contract)
 
     def integration(self, topic: str, quote: dict):
         if topic.startswith("MKT/"):
