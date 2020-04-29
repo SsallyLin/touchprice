@@ -1,5 +1,10 @@
 # Shioaji touch order extension
 
+
+[![codecov](https://codecov.io/gh/SsallyLin/touchprice/branch/master/graph/badge.svg)](https://codecov.io/gh/SsallyLin/touchprice)
+
+
+
 Touchprice is an extension feature of Shioaji. Using the conditions to trigger placing order.
 
 ## Installation
