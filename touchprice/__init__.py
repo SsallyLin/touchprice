@@ -9,4 +9,6 @@ from .touch_price import (
     PriceType,
     Trend,
     StatusInfo,
+    Qty,
+    QtyGap,
 )

@@ -44,7 +44,9 @@ class QtyGap(Base):
 
 
 class Qty(QtyGap):
-    def __init__(self, qty: int, trend: Trend):
+    trend: Trend = Trend.Equal
+
+    def __init__(self, qty: int, trend: Trend = Trend.Equal):
         super().__init__(**dict(qty=qty, trend=trend))
 
 
