@@ -152,17 +152,20 @@ def test_update_snapshot(
         assert touch_order.api.snapshots.call_count == 1
 
 
-testcase_adjust_condition = [[Price(price=3, trend="Up"), 1], [None, 0]]
+testcase_adjust_condition = [
+    [Price(price=3, trend="Up", price_type="LimitDown"), False],
+    [None, True],
+]
 
 
-@pytest.mark.parametrize("condition, count", testcase_adjust_condition)
+@pytest.mark.parametrize("condition, expected", testcase_adjust_condition)
 def test_adjust_condition(
     mocker,
     touch_order: TouchOrder,
     contract: Future,
     order: Order,
     condition: Price,
-    count: int,
+    expected: bool,
 ):
     touchorder_cond = TouchOrderCond(
         touch_cmd=TouchCmd(code="TXFC0", close=condition),
@@ -173,8 +176,8 @@ def test_adjust_condition(
     touch_order.set_price = mocker.MagicMock(
         return_value=PriceGap(price=10, trend="Up")
     )
-    touch_order.adjust_condition(touchorder_cond, contract)
-    assert touch_order.set_price.call_count == count
+    res = touch_order.adjust_condition(touchorder_cond, contract) is None
+    assert res == expected
 
 
 testcase_set_condition = ["TXFC0", "TXFD0"]
@@ -297,7 +300,13 @@ testcase_integration = [["MKT/2890", 1], ["QUT/2890", 1], ["XXX/XX", 0]]
 
 @pytest.mark.parametrize("topic, touch_count", testcase_integration)
 def test_integration(mocker, touch_order: TouchOrder, topic: str, touch_count: int):
-    quote = {"Close": 12, "VolSum": 1, "Volume": 1, "BidPrice": [11], "AskPrice": [11]}
+    quote = {
+        "Close": [12],
+        "VolSum": [1],
+        "Volume": [1],
+        "BidPrice": [11],
+        "AskPrice": [11],
+    }
     touch_order.infos = {
         "2890": StatusInfo(
             close=11,
