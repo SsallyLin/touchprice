@@ -1,6 +1,6 @@
 import shioaji as sj
 import typing
-from .core import Base
+from core import Base
 from pydantic import StrictInt
 from functools import partial
 from enum import Enum
@@ -206,8 +206,6 @@ class TouchOrder:
             elif trend == Trend.Equal:
                 if data == value:
                     return True
-            else:
-                return False
 
     def touch(self, code: str):
         conditions = self.conditions.get(code, False)
@@ -245,3 +243,9 @@ class TouchOrder:
                 info.buy_price = quote["BidPrice"][0]
                 info.sell_price = quote["AskPrice"][0]
                 self.touch(code)
+
+    def show_condition(self, code: str = None):
+        if not code:
+            return self.conditions
+        else:
+            return self.conditions[code]

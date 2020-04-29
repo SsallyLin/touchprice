@@ -14,6 +14,8 @@ from touchprice import (
     PriceType,
     Trend,
     StatusInfo,
+    Qty,
+    QtyGap,
 )
 
 
@@ -153,23 +155,28 @@ def test_update_snapshot(
 
 
 testcase_adjust_condition = [
-    [Price(price=3, trend="Up", price_type="LimitDown"), False],
-    [None, True],
+    [
+        TouchCmd(
+            code="TXFC0", close=Price(price=3, trend="Up", price_type="LimitDown")
+        ),
+        False,
+    ],
+    [TouchCmd(code="TXFC0", volume=Qty(qty=3)), False],
+    [TouchCmd(code="TXFC0"), True],
 ]
 
 
-@pytest.mark.parametrize("condition, expected", testcase_adjust_condition)
+@pytest.mark.parametrize("touch_cmd, expected", testcase_adjust_condition)
 def test_adjust_condition(
     mocker,
     touch_order: TouchOrder,
     contract: Future,
     order: Order,
-    condition: Price,
+    touch_cmd: TouchCmd,
     expected: bool,
 ):
     touchorder_cond = TouchOrderCond(
-        touch_cmd=TouchCmd(code="TXFC0", close=condition),
-        order_cmd=OrderCmd(code="TXFC0", order=order),
+        touch_cmd=touch_cmd, order_cmd=OrderCmd(code="TXFC0", order=order),
     )
     touch_order.contracts = contract
     contract = touch_order.contracts["TXFC0"]
@@ -213,6 +220,26 @@ def test_set_condition(
     assert touch_order.api.quote.subscribe.call_count == 2
     res = touch_order.conditions.get(condition.touch_cmd.code)
     assert not res == False
+
+
+testcase_touch_cond = [
+    [{"price": 11, "trend": "Up"}, 10, None],
+    [{"price": 11, "trend": "Up"}, 11, True],
+    [{"price": 11, "trend": "Up"}, 12, True],
+    [{"price": 11, "trend": "Down"}, 10, True],
+    [{"price": 11, "trend": "Down"}, 11, True],
+    [{"price": 11, "trend": "Down"}, 12, None],
+    [{"price": 11, "trend": "Equal"}, 11, True],
+    [{"price": 11, "trend": "Equal"}, 10, None],
+]
+
+
+@pytest.mark.parametrize("info, value, expected", testcase_touch_cond)
+def test_touch_cond(
+    info: typing.Dict, value: float, expected: bool, touch_order: TouchOrder,
+):
+    res = touch_order.touch_cond(info, value)
+    assert res == expected
 
 
 testcase_delete_condition = [["TXFC0", 0], ["TXFD0", 1]]
@@ -323,3 +350,30 @@ def test_integration(mocker, touch_order: TouchOrder, topic: str, touch_count: i
     touch_order.touch = mocker.MagicMock()
     touch_order.integration(topic, quote)
     assert touch_order.touch.call_count == touch_count
+
+
+testcase_show_condition = [["", 2], ["TXFC0", 1]]
+
+
+@pytest.mark.parametrize("code, length", testcase_show_condition)
+def test_show_condition(
+    contract: Future, order: Order, code: str, length: int, touch_order: TouchOrder
+):
+    touch_order.conditions = {
+        "TXFC0": [
+            StoreCond(
+                close=PriceGap(price=9928, trend="Up"),
+                order_contract=contract["TXFC0"],
+                order=order,
+            )
+        ],
+        "TXFD0": [
+            StoreCond(
+                close=PriceGap(price=9928, trend="Up"),
+                order_contract=contract["TXFC0"],
+                order=order,
+            )
+        ],
+    }
+    res = len(touch_order.show_condition(code))
+    assert res == length
