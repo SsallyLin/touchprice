@@ -226,7 +226,7 @@ class TouchOrder:
                         self.api.place_order(order_contract, order)
 
     def integration(self, topic: str, quote: dict):
-        if topic.startswith("MKT/"):
+        if topic.startswith("MKT/") or topic.startswith("L/"):
             code = topic.split("/")[-1]
             if code in self.infos.keys():
                 info = self.infos[code]
@@ -236,7 +236,7 @@ class TouchOrder:
                 info.total_volume = quote["VolSum"][0]
                 info.volume = quote["Volume"][0]
                 self.touch(code)
-        elif topic.startswith("QUT/"):
+        elif topic.startswith("QUT/") or topic.startswith("Q/"):
             code = topic.split("/")[-1]
             if code in self.infos.keys():
                 info = self.infos[code]
