@@ -35,5 +35,6 @@ jobs:
     steps:
     - name: Publish package to PyPI
       run: |
+        make install
         poetry build
         poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
