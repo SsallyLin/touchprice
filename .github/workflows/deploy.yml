@@ -33,8 +33,15 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.repository == 'SsallyLin/touchprice'
     needs: [test]
     steps:
-    - name: Publish package to PyPI
-      run: |
-        make install
-        poetry build
-        poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+      - uses: actions/checkout@master
+      - name: Setup Python  
+        uses: actions/setup-python@master
+        with:
+          python-version: [3.7]
+      - name: Install Dependency
+        run: |
+          make install
+      - name: Publish package to PyPI
+        run: |
+          poetry build
+          poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
