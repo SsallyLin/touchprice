@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "touchprice"
-version = "0.0.3"
+version = "0.0.0"
 description = "shioaji touchprice extentions"
 authors = ["Sally <nipolikae@gmail.com>"]
 
@@ -13,6 +13,11 @@ shioaji = "^0.2.0-dev.0"
 pytest = "^5.4.1"
 pytest-mock = "^3.0.0"
 pytest-cov = "^2.8.1"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+format = "v{base}"
 
 [build-system]
 requires = ["poetry>=0.12"]

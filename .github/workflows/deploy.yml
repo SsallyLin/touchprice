@@ -1,7 +1,7 @@
-name: Pytest Codecov
+name: Deploy
 on: [push]
 jobs:
-  run:
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix: 
@@ -27,3 +27,13 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
+
+  build_publish:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.repository == 'SsallyLin/touchprice'
+    needs: [test]
+    steps:
+    - name: Publish package to PyPI
+      run: |
+        poetry build
+        poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
