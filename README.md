@@ -1,6 +1,8 @@
 # Shioaji touch order extension
 
-
+[![PyPI - Status](https://img.shields.io/pypi/v/touchprice.svg?)](https://pypi.org/project/touchprice)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/touchprice.svg)]()
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/touchprice.svg?)](https://pypi.org/project/touchprice)
 [![codecov](https://codecov.io/gh/SsallyLin/touchprice/branch/master/graph/badge.svg)](https://codecov.io/gh/SsallyLin/touchprice)
 
 

@@ -17,7 +17,7 @@ pytest-cov = "^2.8.1"
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
-format = "v{base}+{distance}.{commit}"
+format = "v{base}"
 
 [build-system]
 requires = ["poetry>=0.12"]
