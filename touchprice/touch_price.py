@@ -1,6 +1,6 @@
 import shioaji as sj
 import typing
-from core import Base
+from .core import Base
 from pydantic import StrictInt
 from functools import partial
 from enum import Enum

@@ -12,3 +12,4 @@ from .touch_price import (
     Qty,
     QtyGap,
 )
+from .core import Base
