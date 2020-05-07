@@ -41,6 +41,7 @@ jobs:
       - name: Install Dependency
         run: |
           make install
+          echo github.event.ref
       - name: Publish package to PyPI
         run: |
           poetry build
