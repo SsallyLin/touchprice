@@ -40,8 +40,7 @@ jobs:
           python-version: 3.7
       - name: Install Dependency
         run: |
-          make install
-          echo github.event.ref
+          make install-poetry
       - name: Publish package to PyPI
         run: |
           poetry build
