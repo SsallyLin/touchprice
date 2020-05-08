@@ -26,18 +26,7 @@ touch = tp.TouchOrder(api)
 ## Condition
 TouchOrderCond contains touch condition and order condition. 
 
-### Touch condition
-#### TouchCmd arg:
-* code: str,
-
-* close: touchprice.touch_price.Price = None,
-* buy_price: touchprice.touch_price.Price = None,
-* sell_price: touchprice.touch_price.Price = None,
-* high: touchprice.touch_price.Price = None,
-* low: touchprice.touch_price.Price = None,
-* volume: touchprice.touch_price.Qty = None,
-* total_volume: touchprice.touch_price.Qty = None,
-
+### Set touch condition
 ```
 touch_cmd = 
     touchprice.TouchCmd(
@@ -45,23 +34,32 @@ touch_cmd =
         close = touchprice.Price(price=11.0, trend="Up")
     )
 ```
+#### TouchCmd arg:
+* code: str,
+
+* close: condition.Price = None,
+* buy_price: condition.Price = None,
+* sell_price: condition.Price = None,
+* high: condition.Price = None,
+* low: condition.Price = None,
+* volume: condition.Qty = None,
+* total_volume: condition.Qty = None,
+
+
 
 #### Price arg
 * price: float = 0.0,
-* trend: touchprice.touch_price.Trend = 'Equal' ('Up', 'Down', 'Equal')
-* price_type: touchprice.touch_price.PriceType = 'LimitPrice' ('LimitPrice', 'LimitUp', 'Unchanged ', 'LimitDown ')
+* trend: constant.Trend = 'Equal' ('Up', 'Down', 'Equal')
+* price_type: constant.PriceType = 'LimitPrice' ('LimitPrice', 'LimitUp', 'Unchanged', 'LimitDown ')
 
 #### Qty arg
 * qty: int,
-* trend: touchprice.touch_price.Trend = 'Equal'('Up', 'Down', 'Equal')
+* trend: constant.Trend = 'Equal' ('Up', 'Down', 'Equal')
 
 
 
 
-### Order condition
-### OrderCmd arg
-* code: str
-* order: shioaji.Order
+### Set order condition
 ```
 order_cmd = touchprice.OrderCmd(
     code="2890",
@@ -74,6 +72,10 @@ order_cmd = touchprice.OrderCmd(
     )
 
 ```
+### OrderCmd arg
+* code: str
+* order: shioaji.order.Order
+
 
 
 
