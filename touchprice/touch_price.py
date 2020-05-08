@@ -2,8 +2,8 @@ import shioaji as sj
 import typing
 from pydantic import StrictInt
 from functools import partial
-from constant import Trend, PriceType
-from condition import (
+from touchprice.constant import Trend, PriceType
+from touchprice.condition import (
     Price,
     TouchOrderCond,
     OrderCmd,

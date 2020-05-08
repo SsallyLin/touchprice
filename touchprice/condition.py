@@ -1,6 +1,6 @@
 import shioaji as sj
 from touchprice.core import Base
-from constant import Trend, PriceType
+from touchprice.constant import Trend, PriceType
 
 
 class PriceGap(Base):
