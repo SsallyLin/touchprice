@@ -111,14 +111,17 @@ class TouchOrderExecutor:
                     cond.pop("order")
                     cond.pop("order_contract")
                     cond.pop("excuted")
+                    cond.pop("result")
                     if all(
                         self.touch_cond(value, info[key]) for key, value in cond.items()
                     ):
                         self.conditions[code][num].excuted = True
-                        self.api.place_order(order_contract, order)
+                        self.api.place_order(
+                            order_contract, order, cb=self.conditions[code][num].result
+                        )
 
     def integration(self, topic: str, quote: dict):
-        if quote["Simtrade"] == 1:
+        if "Simtrade" in quote.keys():
             pass
         elif topic.startswith("MKT/") or topic.startswith("L/"):
             code = topic.split("/")[-1]

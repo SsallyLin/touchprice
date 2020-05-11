@@ -1,6 +1,7 @@
 import shioaji as sj
 from touchprice.core import Base
 from touchprice.constant import Trend, PriceType
+from typing import Callable
 
 
 class PriceGap(Base):
@@ -95,6 +96,7 @@ class StoreCond(Base):
     total_volume: QtyGap = None
     order_contract: sj.contracts.Contract
     order: sj.Order
+    result: Callable = print
     excuted: bool = False
 
 

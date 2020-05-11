@@ -85,7 +85,7 @@ condition = touchprice.TouchOrderCond(
                 touch_cmd = touch_cond, 
                 order_cmd = order_cond
             )
-touch.set_condition(condition)
+touch.add_condition(condition)
 ``` 
     
 
