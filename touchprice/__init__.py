@@ -1,5 +1,5 @@
 from .touch_price import (
-    TouchOrder,
+    TouchOrderExecutor,
     TouchOrderCond,
     OrderCmd,
     TouchCmd,

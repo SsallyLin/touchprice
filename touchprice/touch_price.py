@@ -25,7 +25,7 @@ def get_contracts(api: sj.Shioaji):
     return contracts
 
 
-class TouchOrder:
+class TouchOrderExecutor:
     def __init__(self, api: sj.Shioaji):
         self.api: sj.Shioaji = api
         self.conditions: typing.Dict[str, typing.List[StoreCond]] = {}
@@ -56,12 +56,14 @@ class TouchOrder:
         if tconds_dict:
             for key, value in tconds_dict.items():
                 if key not in ["volume", "total_volume"]:
-                    tconds_dict[key] = TouchOrder.set_price(Price(**value), contract)
+                    tconds_dict[key] = TouchOrderExecutor.set_price(
+                        Price(**value), contract
+                    )
             tconds_dict["order_contract"] = self.contracts[condition.order_cmd.code]
             tconds_dict["order"] = condition.order_cmd.order
             return StoreCond(**tconds_dict)
 
-    def set_condition(self, condition: TouchOrderCond):
+    def add_condition(self, condition: TouchOrderCond):
         code = condition.touch_cmd.code
         touch_contract = self.contracts[code]
         self.update_snapshot(touch_contract)
@@ -116,7 +118,9 @@ class TouchOrder:
                         self.api.place_order(order_contract, order)
 
     def integration(self, topic: str, quote: dict):
-        if topic.startswith("MKT/") or topic.startswith("L/"):
+        if quote["Simtrade"] == 1:
+            pass
+        elif topic.startswith("MKT/") or topic.startswith("L/"):
             code = topic.split("/")[-1]
             if code in self.infos.keys():
                 info = self.infos[code]

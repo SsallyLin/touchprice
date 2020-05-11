@@ -4,7 +4,7 @@ from shioaji.contracts import Future
 from shioaji.order import Order
 from shioaji.data import Snapshots, Snapshot
 from touchprice import (
-    TouchOrder,
+    TouchOrderExecutor,
     TouchOrderCond,
     OrderCmd,
     TouchCmd,
@@ -27,7 +27,7 @@ def api(mocker):
 
 @pytest.fixture()
 def touch_order(api):
-    return TouchOrder(api)
+    return TouchOrderExecutor(api)
 
 
 @pytest.fixture()
@@ -98,7 +98,10 @@ testcase_set_price = [
 
 @pytest.mark.parametrize("price_type, excepted", testcase_set_price)
 def test_set_price(
-    touch_order: TouchOrder, contract: Future, price_type: PriceType, excepted: float
+    touch_order: TouchOrderExecutor,
+    contract: Future,
+    price_type: PriceType,
+    excepted: float,
 ):
     price_info = Price(price=9999.0, price_type=price_type, trend="Up")
     touch_order.contracts = contract
@@ -112,7 +115,7 @@ testcase_update_snapshot = [["TXFD0", True], ["TXFC0", False]]
 @pytest.mark.parametrize("code, in_infos", testcase_update_snapshot)
 def test_update_snapshot(
     mocker,
-    touch_order: TouchOrder,
+    touch_order: TouchOrderExecutor,
     snapshot: Snapshot,
     contract: Future,
     code: str,
@@ -169,7 +172,7 @@ testcase_adjust_condition = [
 @pytest.mark.parametrize("touch_cmd, expected", testcase_adjust_condition)
 def test_adjust_condition(
     mocker,
-    touch_order: TouchOrder,
+    touch_order: TouchOrderExecutor,
     contract: Future,
     order: Order,
     touch_cmd: TouchCmd,
@@ -191,8 +194,8 @@ testcase_set_condition = ["TXFC0", "TXFD0"]
 
 
 @pytest.mark.parametrize("code", testcase_set_condition)
-def test_set_condition(
-    mocker, contract: Future, order: Order, touch_order: TouchOrder, code: str
+def test_add_condition(
+    mocker, contract: Future, order: Order, touch_order: TouchOrderExecutor, code: str
 ):
     touch_order.contracts = {"TXFC0": contract["TXFC0"], "TXFD0": contract["TXFC0"]}
     store_cond = StoreCond(
@@ -207,7 +210,7 @@ def test_set_condition(
     touch_order.conditions = {"TXFC0": [store_cond]}
     touch_order.update_snapshot = mocker.MagicMock()
     touch_order.adjust_condition = mocker.MagicMock()
-    touch_order.set_condition(condition)
+    touch_order.add_condition(condition)
     touch_order.update_snapshot.assert_called_once_with(
         touch_order.contracts[condition.touch_cmd.code]
     )
@@ -236,7 +239,7 @@ testcase_touch_cond = [
 
 @pytest.mark.parametrize("info, value, expected", testcase_touch_cond)
 def test_touch_cond(
-    info: typing.Dict, value: float, expected: bool, touch_order: TouchOrder,
+    info: typing.Dict, value: float, expected: bool, touch_order: TouchOrderExecutor,
 ):
     res = touch_order.touch_cond(info, value)
     assert res == expected
@@ -250,7 +253,7 @@ def test_delete_condition(
     mocker,
     contract: Future,
     order: Order,
-    touch_order: TouchOrder,
+    touch_order: TouchOrderExecutor,
     contract_code: str,
     condition_len: int,
 ):
@@ -291,7 +294,7 @@ def test_touch(
     mocker,
     contract: Future,
     order: Order,
-    touch_order: TouchOrder,
+    touch_order: TouchOrderExecutor,
     code: str,
     price: PriceGap,
     close_price: float,
@@ -322,18 +325,66 @@ def test_touch(
     assert touch_order.api.place_order.call_count == order_count
 
 
-testcase_integration = [["MKT/2890", 1], ["QUT/2890", 1], ["XXX/XX", 0]]
+testcase_integration = [
+    [
+        "MKT/2890",
+        {
+            "Close": [12],
+            "VolSum": [1],
+            "Volume": [1],
+            "BidPrice": [11],
+            "AskPrice": [11],
+            "Simtrade": 1,
+        },
+        0,
+    ],
+    [
+        "MKT/2890",
+        {
+            "Close": [12],
+            "VolSum": [1],
+            "Volume": [1],
+            "BidPrice": [11],
+            "AskPrice": [11],
+            "Simtrade": 0,
+        },
+        1,
+    ],
+    [
+        "QUT/2890",
+        {
+            "Close": [12],
+            "VolSum": [1],
+            "Volume": [1],
+            "BidPrice": [11],
+            "AskPrice": [11],
+            "Simtrade": 0,
+        },
+        1,
+    ],
+    [
+        "XXX/XX",
+        {
+            "Close": [12],
+            "VolSum": [1],
+            "Volume": [1],
+            "BidPrice": [11],
+            "AskPrice": [11],
+            "Simtrade": 0,
+        },
+        0,
+    ],
+]
 
 
-@pytest.mark.parametrize("topic, touch_count", testcase_integration)
-def test_integration(mocker, touch_order: TouchOrder, topic: str, touch_count: int):
-    quote = {
-        "Close": [12],
-        "VolSum": [1],
-        "Volume": [1],
-        "BidPrice": [11],
-        "AskPrice": [11],
-    }
+@pytest.mark.parametrize("topic, quote, touch_count", testcase_integration)
+def test_integration(
+    mocker,
+    touch_order: TouchOrderExecutor,
+    topic: str,
+    quote: typing.Dict,
+    touch_count: int,
+):
     touch_order.infos = {
         "2890": StatusInfo(
             close=11,
@@ -357,7 +408,11 @@ testcase_show_condition = [["", 2], ["TXFC0", 1]]
 
 @pytest.mark.parametrize("code, length", testcase_show_condition)
 def test_show_condition(
-    contract: Future, order: Order, code: str, length: int, touch_order: TouchOrder
+    contract: Future,
+    order: Order,
+    code: str,
+    length: int,
+    touch_order: TouchOrderExecutor,
 ):
     touch_order.conditions = {
         "TXFC0": [
