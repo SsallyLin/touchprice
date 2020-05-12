@@ -96,7 +96,8 @@ class StoreCond(Base):
     total_volume: QtyGap = None
     order_contract: sj.contracts.Contract
     order: sj.Order
-    result: Callable = print
+    result: sj.order.Trade = None
+    excuted_cb: Callable[sj.order.Trade] = print
     excuted: bool = False
 
 
