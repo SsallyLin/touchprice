@@ -79,7 +79,7 @@ order_cmd = touchprice.OrderCmd(
 
 
 
-## Set condition to order    
+## Add condition to order    
 ```
 condition = touchprice.TouchOrderCond(
                 touch_cmd = touch_cond, 
@@ -90,10 +90,10 @@ touch.add_condition(condition)
     
 
 ## Delete condition
-    touchprice.delete_condition(condition)
+    touch.delete_condition(condition)
 
 ## Show condition
 If not set code can show all conditions, else just show coditions of code. 
 ``` 
-touchprice.show_condition(code)
+touch.show_condition(code)
 ``` 
