@@ -116,8 +116,8 @@ class TouchOrderExecutor:
                         self.touch_cond(value, info[key]) for key, value in cond.items()
                     ):
                         self.conditions[code][num].excuted = True
-                        self.api.place_order(
-                            order_contract, order, cb=self.conditions[code][num].result
+                        self.conditions[code][num].result = self.api.place_order(
+                            order_contract, order, cb=self.conditions[code][num].excuted_cb
                         )
 
     def integration(self, topic: str, quote: dict):
