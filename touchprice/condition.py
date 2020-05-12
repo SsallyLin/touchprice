@@ -97,7 +97,7 @@ class StoreCond(Base):
     order_contract: sj.contracts.Contract
     order: sj.Order
     result: sj.order.Trade = None
-    excuted_cb: Callable[sj.order.Trade] = print
+    excuted_cb: Callable[[sj.order.Trade], sj.order.Trade] = print
     excuted: bool = False
 
 

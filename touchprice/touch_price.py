@@ -111,7 +111,7 @@ class TouchOrderExecutor:
                     cond.pop("order")
                     cond.pop("order_contract")
                     cond.pop("excuted")
-                    cond.pop("result")
+                    cond.pop("excuted_cb")
                     if all(
                         self.touch_cond(value, info[key]) for key, value in cond.items()
                     ):
