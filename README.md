@@ -21,6 +21,7 @@ import shioaji as sj
 
 api = sj.Shioaji()
 api.login(USERID, PASSWORD)
+api.activate_ca(CA_PATH, CA_USERID, CA_PASSWORD)
 touch = tp.TouchOrder(api)
 ```   
 ## Condition
@@ -29,14 +30,13 @@ TouchOrderCond contains touch condition and order condition.
 ### Set touch condition
 ```
 touch_cmd = 
-    touchprice.TouchCmd(
+    tp.TouchCmd(
         code="2890", 
-        close = touchprice.Price(price=11.0, trend="Up")
+        close = tp.Price(price=11.0, trend="Up")
     )
 ```
 #### TouchCmd arg:
 * code: str,
-
 * close: condition.Price = None,
 * buy_price: condition.Price = None,
 * sell_price: condition.Price = None,
@@ -50,7 +50,7 @@ touch_cmd =
 #### Price arg
 * price: float = 0.0,
 * trend: constant.Trend = 'Equal' ('Up', 'Down', 'Equal')
-* price_type: constant.PriceType = 'LimitPrice' ('LimitPrice', 'LimitUp', 'Unchanged', 'LimitDown ')
+* price_type: constant.PriceType = 'LimitPrice'  ('LimitPrice', 'LimitUp', 'Unchanged', 'LimitDown ')
 
 #### Qty arg
 * qty: int,
@@ -61,9 +61,9 @@ touch_cmd =
 
 ### Set order condition
 ```
-order_cmd = touchprice.OrderCmd(
+order_cmd = tp.OrderCmd(
     code="2890",
-    order = Order(
+    order = sj.Order(
         action="Buy",
         price=10,
         quantity=1,
@@ -81,7 +81,7 @@ order_cmd = touchprice.OrderCmd(
 
 ## Add condition to order    
 ```
-condition = touchprice.TouchOrderCond(
+condition = tp.TouchOrderCond(
                 touch_cmd = touch_cond, 
                 order_cmd = order_cond
             )
