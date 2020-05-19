@@ -341,7 +341,7 @@ description = "Sinopac All New Trading Api."
 name = "shioaji"
 optional = false
 python-versions = "*"
-version = "0.2.1.dev3"
+version = "0.2.1.dev4"
 
 [package.dependencies]
 importlib-metadata = "1.6.0"
@@ -415,7 +415,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "b04c616f93c19101bca30b19652471c528235d38a58d683833f07e0475029392"
+content-hash = "d98199506a9aaaadcf49908b17d1be7ad144a6ca208af965830c81a502b7d7ec"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -590,15 +590,15 @@ sentry-sdk = [
     {file = "sentry_sdk-0.14.1-py2.py3-none-any.whl", hash = "sha256:b06dd27391fd11fb32f84fe054e6a64736c469514a718a99fb5ce1dff95d6b28"},
 ]
 shioaji = [
-    {file = "shioaji-0.2.1.dev3-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:2c35ccd5518e3b1c04c56d7e5b646a0b45fde008b4463903c741aaf7cd27e8ce"},
-    {file = "shioaji-0.2.1.dev3-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:88d4b1f551d6cd4f307e935f0511e4455ba610dc9439155b609863154321cf85"},
-    {file = "shioaji-0.2.1.dev3-cp36-cp36m-win_amd64.whl", hash = "sha256:73fa6c691982cd26702379f489eae37f102da3a01e894ec8d407b7a10c0c9571"},
-    {file = "shioaji-0.2.1.dev3-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:9fe5ab82faa1c941032144880689cba1b590ceb990256eb6d4dab7b105eec1e7"},
-    {file = "shioaji-0.2.1.dev3-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:6cbc04314dec30e831a5ee963010cedc2cb6c232243bbd7f1660b1ea34181fc5"},
-    {file = "shioaji-0.2.1.dev3-cp37-cp37m-win_amd64.whl", hash = "sha256:ce9d6e4bda84969973378aa05ac8f13c8dc6c13884e756a15274dd7b89538d4d"},
-    {file = "shioaji-0.2.1.dev3-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:668c1e099e6ec6aa89b1b174893b0de3976ff6b565dbd3036c58adb795c9aef4"},
-    {file = "shioaji-0.2.1.dev3-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:99957da1c6cc3c8696195caedba3a35fa42841b2b71bcef0c37b24d25f9c0d14"},
-    {file = "shioaji-0.2.1.dev3-cp38-cp38-win_amd64.whl", hash = "sha256:e7842550bcffed0921d8d142d90f2c0923b788c94d9bf52fabc237eaf25f97f9"},
+    {file = "shioaji-0.2.1.dev4-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:07e16e79128656748b39bd7e65278a062fa785b6292ccd498630d64367e07c1d"},
+    {file = "shioaji-0.2.1.dev4-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:9b0288c85a2502d54971678ddedb69d0a930c6d9f6942f3ae38a56e328c39c4e"},
+    {file = "shioaji-0.2.1.dev4-cp36-cp36m-win_amd64.whl", hash = "sha256:e476a232f0fc7c5b654e5eec0ae274b815bbf4980d9437e00a2c976103195023"},
+    {file = "shioaji-0.2.1.dev4-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:e013bc660d7d1879d358d3ef6a44f1f92a739b74b3d47eeb7f36e9a2b1787178"},
+    {file = "shioaji-0.2.1.dev4-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:762b2eaf9b4a799769076f4f4eb4bd3a669d07ee2ac0c5a68d32b430b221d315"},
+    {file = "shioaji-0.2.1.dev4-cp37-cp37m-win_amd64.whl", hash = "sha256:be3b914e800436bf32f247fbef433ac7cfc418c1a0f15c243d206906aca6381b"},
+    {file = "shioaji-0.2.1.dev4-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:4c512ba95564cce90d3d9c3c8ab46dc3242068b15f3eb8da7c0c6c593b3586e9"},
+    {file = "shioaji-0.2.1.dev4-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:3f51d95c496878865976018ea6ff31c5dfc5b3f285e8c45a382e3a7759a04538"},
+    {file = "shioaji-0.2.1.dev4-cp38-cp38-win_amd64.whl", hash = "sha256:5c57bd0b4ba291208b98dc53e546a52a5dac43176604602e0271b2edf4713ebd"},
 ]
 six = [
     {file = "six-1.14.0-py2.py3-none-any.whl", hash = "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"},
