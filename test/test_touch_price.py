@@ -2,7 +2,7 @@ import pytest
 import typing
 from shioaji.contracts import Future
 from shioaji.order import Order
-from shioaji.data import Snapshots, Snapshot
+from shioaji.data import Snapshot
 from touchprice import (
     TouchOrderExecutor,
     TouchOrderCond,
@@ -123,34 +123,32 @@ def test_update_snapshot(
 ):
     touch_order.infos = {"TXFD0": snapshot}
     touch_order.api.snapshots = mocker.MagicMock(
-        return_value=Snapshots(
-            snapshot=[
-                Snapshot(
-                    ts=1586957400087000000,
-                    code="TXFD0",
-                    exchange="TAIFEX",
-                    open=10347.0,
-                    high=10463.0,
-                    low=10330.0,
-                    close=10450.0,
-                    tick_type="Sell",
-                    change_price=107.0,
-                    change_rate=1.03,
-                    change_type="Up",
-                    average_price=10410.18,
-                    volume=3,
-                    total_volume=65128,
-                    amount=31350,
-                    total_amount=677994228,
-                    yesterday_volume=27842.0,
-                    buy_price=10450.0,
-                    buy_volume=1710.0,
-                    sell_price=10451.0,
-                    sell_volume=9,
-                    volume_ratio=2.34,
-                )
-            ]
-        )
+        return_value=[
+            Snapshot(
+                ts=1586957400087000000,
+                code="TXFD0",
+                exchange="TAIFEX",
+                open=10347.0,
+                high=10463.0,
+                low=10330.0,
+                close=10450.0,
+                tick_type="Sell",
+                change_price=107.0,
+                change_rate=1.03,
+                change_type="Up",
+                average_price=10410.18,
+                volume=3,
+                total_volume=65128,
+                amount=31350,
+                total_amount=677994228,
+                yesterday_volume=27842.0,
+                buy_price=10450.0,
+                buy_volume=1710.0,
+                sell_price=10451.0,
+                sell_volume=9,
+                volume_ratio=2.34,
+            )
+        ]
     )
     touch_order.update_snapshot(contract["TXFC0"])
     if not in_infos:
