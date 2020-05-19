@@ -342,7 +342,7 @@ description = "Sinopac All New Trading Api."
 name = "shioaji"
 optional = false
 python-versions = "*"
-version = "0.2.0.dev0"
+version = "0.2.0.dev1"
 
 [package.dependencies]
 loguru = "0.4.1"
@@ -415,7 +415,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "6abfa30dcd018f6955919e7b5d099d20fac335ce1e58924e09ef3a5532be78c1"
+content-hash = "3f4157f27e298476f445188bd748897ade2c189bd108a6077b034da1e3e14775"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -590,11 +590,9 @@ sentry-sdk = [
     {file = "sentry_sdk-0.14.1-py2.py3-none-any.whl", hash = "sha256:b06dd27391fd11fb32f84fe054e6a64736c469514a718a99fb5ce1dff95d6b28"},
 ]
 shioaji = [
-    {file = "shioaji-0.2.0.dev0-cp35-cp35m-win_amd64.whl", hash = "sha256:a2fb08c4705973046b60b9b69c3073019f9747c502d390856a558c7e1db3f6e9"},
-    {file = "shioaji-0.2.0.dev0-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:a09e6e63c97526216aa5428a3bad4236adf2b668a4c0a7450ae5c788287afda3"},
-    {file = "shioaji-0.2.0.dev0-cp36-cp36m-win_amd64.whl", hash = "sha256:d7adc2dabc53d9a9c130e5a7c6210cce893b671ab62ab0a2f213dba4446c6ce1"},
-    {file = "shioaji-0.2.0.dev0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:02386a584228da52e4e2053f3bdd4821e3efa8728d26895aaaf03e48b9bdbd17"},
-    {file = "shioaji-0.2.0.dev0-cp37-cp37m-win_amd64.whl", hash = "sha256:2cc76425c5d026d9fe25e3108845a340f43a24a8a2b16f79878b1887394b9bb3"},
+    {file = "shioaji-0.2.0.dev1-cp35-cp35m-win_amd64.whl", hash = "sha256:3d813520a3fac556d1686bf9f114736c2ee3446ab7ff77b404cc79f987a958a2"},
+    {file = "shioaji-0.2.0.dev1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:f30e111f7b660cf13b4b7a84b33107d8497bd046daa7d4e59d6e93ffd1f47383"},
+    {file = "shioaji-0.2.0.dev1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:ade5a7a9c88061e92f362340dd1d90048b89ff21248ce1ec508e646d85d2aafd"},
 ]
 six = [
     {file = "six-1.14.0-py2.py3-none-any.whl", hash = "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"},
