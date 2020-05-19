@@ -106,8 +106,8 @@ description = "Immutable Collections"
 marker = "python_version < \"3.7\""
 name = "immutables"
 optional = false
-python-versions = "*"
-version = "0.12"
+python-versions = ">=3.5"
+version = "0.14"
 
 [[package]]
 category = "main"
@@ -149,7 +149,7 @@ description = "More routines for operating on iterables, beyond itertools"
 name = "more-itertools"
 optional = false
 python-versions = ">=3.5"
-version = "8.2.0"
+version = "8.3.0"
 
 [[package]]
 category = "main"
@@ -226,7 +226,7 @@ description = "python solclient"
 name = "pysolace"
 optional = false
 python-versions = "*"
-version = "0.3.3"
+version = "0.2.6"
 
 [package.dependencies]
 loguru = "*"
@@ -242,7 +242,7 @@ description = "pytest: simple powerful testing with Python"
 name = "pytest"
 optional = false
 python-versions = ">=3.5"
-version = "5.4.1"
+version = "5.4.2"
 
 [package.dependencies]
 atomicwrites = ">=1.0"
@@ -341,13 +341,13 @@ description = "Sinopac All New Trading Api."
 name = "shioaji"
 optional = false
 python-versions = "*"
-version = "0.2.0.dev9"
+version = "0.2.0.dev2"
 
 [package.dependencies]
 importlib-metadata = "1.6.0"
 loguru = "0.4.1"
 pydantic = "1.0.0"
-pysolace = "0.3.3"
+pysolace = "0.2.6"
 requests = "2.22.0"
 sentry-sdk = "0.14.1"
 xxhash = "1.4.3"
@@ -404,7 +404,6 @@ version = "1.4.3"
 [[package]]
 category = "main"
 description = "Backport of pathlib-compatible object wrapper for zip files"
-marker = "python_version < \"3.8\""
 name = "zipp"
 optional = false
 python-versions = ">=3.6"
@@ -415,7 +414,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "b04c616f93c19101bca30b19652471c528235d38a58d683833f07e0475029392"
+content-hash = "6596c518838b90d65b5459693103805f1227161756863083c64ad3babe9cbdee"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -488,18 +487,18 @@ idna = [
     {file = "idna-2.8.tar.gz", hash = "sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407"},
 ]
 immutables = [
-    {file = "immutables-0.12-cp35-cp35m-macosx_10_13_x86_64.whl", hash = "sha256:e6708f708baa6b21b400d9c637e51d827a58f34d200bb0a81f697b7ee25115a8"},
-    {file = "immutables-0.12-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:3cf3b047e99ad7d30b0dc0f35bd2318220cb950d61d299faccf7d91982f240c6"},
-    {file = "immutables-0.12-cp36-cp36m-macosx_10_13_x86_64.whl", hash = "sha256:901479aa842837550d04486adc26096089aba2d78cb4c62179d8397434b3a2a2"},
-    {file = "immutables-0.12-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:2ab6887146dd1a1eba32de23929d41b4e10761923846ee90500d3cf78de7b26f"},
-    {file = "immutables-0.12-cp36-cp36m-win_amd64.whl", hash = "sha256:a294c5c04a3a8adf324c26d842d2baf199cc50d9abe9e63200d8f3400f26543b"},
-    {file = "immutables-0.12-cp37-cp37m-macosx_10_13_x86_64.whl", hash = "sha256:30726e341c067dc62bee6de4513189a82090fda18192629b458ecec6e596d2a5"},
-    {file = "immutables-0.12-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:19b643fb078b45bb5669786140427acbbbd21c3312c44a6297718ca97bf00c38"},
-    {file = "immutables-0.12-cp37-cp37m-win_amd64.whl", hash = "sha256:f75e7a65be68eb71f818a13a7a9728d26f4e19f7ea865b78d300b635ffadcbc1"},
-    {file = "immutables-0.12-cp38-cp38-macosx_10_13_x86_64.whl", hash = "sha256:d1ee0e401e52a3d9c121e4e68e1f6548c9fab44e8f8eda0cafe29478213924a8"},
-    {file = "immutables-0.12-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:3cd38a96455000c481f94b7fb28fe4971dc4250c7dd34c0c8da53011d0efbb1c"},
-    {file = "immutables-0.12-cp38-cp38-win_amd64.whl", hash = "sha256:5d9e9059e8587ba47af8e110eea962975d90e57c6fb8e09b6bbac18bd4c5d624"},
-    {file = "immutables-0.12.tar.gz", hash = "sha256:ac6237425e9fa87e15f5afca3d358ad4c3f222245950ee4041ca1b0f7ec9288a"},
+    {file = "immutables-0.14-cp35-cp35m-macosx_10_14_x86_64.whl", hash = "sha256:860666fab142401a5535bf65cbd607b46bc5ed25b9d1eb053ca8ed9a1a1a80d6"},
+    {file = "immutables-0.14-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:ce01788878827c3f0331c254a4ad8d9721489a5e65cc43e19c80040b46e0d297"},
+    {file = "immutables-0.14-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:8797eed4042f4626b0bc04d9cf134208918eb0c937a8193a2c66df5041e62d2e"},
+    {file = "immutables-0.14-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:33ce2f977da7b5e0dddd93744862404bdb316ffe5853ec853e53141508fa2e6a"},
+    {file = "immutables-0.14-cp36-cp36m-win_amd64.whl", hash = "sha256:6c8eace4d98988c72bcb37c05e79aae756832738305ae9497670482a82db08bc"},
+    {file = "immutables-0.14-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:ab6c18b7b2b2abc83e0edc57b0a38bf0915b271582a1eb8c7bed1c20398f8040"},
+    {file = "immutables-0.14-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:c099212fd6504513a50e7369fe281007c820cf9d7bb22a336486c63d77d6f0b2"},
+    {file = "immutables-0.14-cp37-cp37m-win_amd64.whl", hash = "sha256:714aedbdeba4439d91cb5e5735cb10631fc47a7a69ea9cc8ecbac90322d50a4a"},
+    {file = "immutables-0.14-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:1c11050c49e193a1ec9dda1747285333f6ba6a30bbeb2929000b9b1192097ec0"},
+    {file = "immutables-0.14-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:c453e12b95e1d6bb4909e8743f88b7f5c0c97b86a8bc0d73507091cb644e3c1e"},
+    {file = "immutables-0.14-cp38-cp38-win_amd64.whl", hash = "sha256:ef9da20ec0f1c5853b5c8f8e3d9e1e15b8d98c259de4b7515d789a606af8745e"},
+    {file = "immutables-0.14.tar.gz", hash = "sha256:a0a1cc238b678455145bae291d8426f732f5255537ed6a5b7645949704c70a78"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-1.6.0-py2.py3-none-any.whl", hash = "sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f"},
@@ -510,8 +509,8 @@ loguru = [
     {file = "loguru-0.4.1.tar.gz", hash = "sha256:a6101fd435ac89ba5205a105a26a6ede9e4ddbb4408a6e167852efca47806d11"},
 ]
 more-itertools = [
-    {file = "more-itertools-8.2.0.tar.gz", hash = "sha256:b1ddb932186d8a6ac451e1d95844b382f55e12686d51ca0c68b6f61f2ab7a507"},
-    {file = "more_itertools-8.2.0-py3-none-any.whl", hash = "sha256:5dd8bcf33e5f9513ffa06d5ad33d78f31e1931ac9a18f33d37e77a180d393a7c"},
+    {file = "more-itertools-8.3.0.tar.gz", hash = "sha256:558bb897a2232f5e4f8e2399089e35aecb746e1f9191b6584a151647e89267be"},
+    {file = "more_itertools-8.3.0-py3-none-any.whl", hash = "sha256:7818f596b1e87be009031c7653d01acc46ed422e6656b394b0f765ce66ed4982"},
 ]
 msgpack = [
     {file = "msgpack-1.0.0-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:cec8bf10981ed70998d98431cd814db0ecf3384e6b113366e7f36af71a0fca08"},
@@ -558,22 +557,22 @@ pyparsing = [
     {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
 ]
 pysolace = [
-    {file = "pysolace-0.3.3-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:541fa46bee3a8725e8b4fd0f32a1c650ad2c09ed51669ec614f3653a0483b830"},
-    {file = "pysolace-0.3.3-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:378df93f3e0687a0bbade816c22b0edfd960011657b626ba98b06cf851b26ae8"},
-    {file = "pysolace-0.3.3-cp35-cp35m-win_amd64.whl", hash = "sha256:fae1634116f069aefd5753c1d5ce9c123b1d40de6064eb48a79110c664923541"},
-    {file = "pysolace-0.3.3-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:14b4530984252a0102310292e461907210fa3300d4f2b43fcc05c955666cbf66"},
-    {file = "pysolace-0.3.3-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:58f8cf68e1d8404f0a383d81f88ddf89db6f31061139d4893adf948543902fcc"},
-    {file = "pysolace-0.3.3-cp36-cp36m-win_amd64.whl", hash = "sha256:72217a96d24c2c869abfe2a3449d78eb324e2cedf24515805dd1310e43f568d0"},
-    {file = "pysolace-0.3.3-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:790dbf21facfd8bda36f6c4786866dc28d2eb3abd2b8635770b19f3c48cd8cc7"},
-    {file = "pysolace-0.3.3-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:4787dffd7369a9fb3afa6e40922b3446ca79827a2526b03a2dd56381c66fa5dd"},
-    {file = "pysolace-0.3.3-cp37-cp37m-win_amd64.whl", hash = "sha256:9329500a252ac52442e9cc893e0993b8b5088496d289ce4caeb4912a270a7358"},
-    {file = "pysolace-0.3.3-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:11713d8785aadfdd5362768a84a60a12359059f929846a9fbf24a9c6efa017a7"},
-    {file = "pysolace-0.3.3-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:5b08f11d817c77ee73231802891954196140153a45e7400b017380b26654ac1d"},
-    {file = "pysolace-0.3.3-cp38-cp38-win_amd64.whl", hash = "sha256:97429d759379d8112e8c396a443c6dce85e2f72d367a26a470a52a35e7e83270"},
+    {file = "pysolace-0.2.6-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:aa4671fcd6acf819ca3a3f7501aa0b0f60958db62f6c02df967a9d606a3e8150"},
+    {file = "pysolace-0.2.6-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:095a1e65d9e3288044211aa5711e9fde6cca911123f5ee96d67b66476d8304b9"},
+    {file = "pysolace-0.2.6-cp35-cp35m-win_amd64.whl", hash = "sha256:f463484dde76505e3060e8e507f49d3c69d9676bd2ce8f3164bdff2af48d8504"},
+    {file = "pysolace-0.2.6-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:51d39ecc4e91f14b03b96f79858a2c7c44d7c3c7cb2366f897da60b2ca422301"},
+    {file = "pysolace-0.2.6-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:7337c618421e56cdc0c0f7385779780b2bb7cf87c999f762dff9a328dfd5fad5"},
+    {file = "pysolace-0.2.6-cp36-cp36m-win_amd64.whl", hash = "sha256:f50b532ecd7aa500906ff3dba44a4e2e00868e8ac3b4729a3eb0b548b592307f"},
+    {file = "pysolace-0.2.6-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:9dd477667511c0b52cdea4019b842e32c0eb9a5c4f768e6d9e5fe8c81fff9203"},
+    {file = "pysolace-0.2.6-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:544881a492ad7584c297e3b91fb37746b5569ff664a424e912ae24679617f4b8"},
+    {file = "pysolace-0.2.6-cp37-cp37m-win_amd64.whl", hash = "sha256:36de6680c849fa6d3e7933aa5b155286ac28cf98d583e3c17d2f03ef9eb0470b"},
+    {file = "pysolace-0.2.6-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:b1cdc3ba0af83eac14b53635e659de9b64acf9359b93885c13cabfc3808e6f51"},
+    {file = "pysolace-0.2.6-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:3a7247f1f9f90a3b414772027f4cac6aafefc3b32394f788a8b1d678c5a3de46"},
+    {file = "pysolace-0.2.6-cp38-cp38-win_amd64.whl", hash = "sha256:0e7789331a8c84c626f0b4e3483779559fd2f261967849b45c6512fb09802501"},
 ]
 pytest = [
-    {file = "pytest-5.4.1-py3-none-any.whl", hash = "sha256:0e5b30f5cb04e887b91b1ee519fa3d89049595f428c1db76e73bd7f17b09b172"},
-    {file = "pytest-5.4.1.tar.gz", hash = "sha256:84dde37075b8805f3d1f392cc47e38a0e59518fb46a431cfdaf7cf1ce805f970"},
+    {file = "pytest-5.4.2-py3-none-any.whl", hash = "sha256:95c710d0a72d91c13fae35dce195633c929c3792f54125919847fdcdf7caa0d3"},
+    {file = "pytest-5.4.2.tar.gz", hash = "sha256:eb2b5e935f6a019317e455b6da83dd8650ac9ffd2ee73a7b657a30873d67a698"},
 ]
 pytest-cov = [
     {file = "pytest-cov-2.8.1.tar.gz", hash = "sha256:cc6742d8bac45070217169f5f72ceee1e0e55b0221f54bcf24845972d3a47f2b"},
@@ -592,15 +591,15 @@ sentry-sdk = [
     {file = "sentry_sdk-0.14.1-py2.py3-none-any.whl", hash = "sha256:b06dd27391fd11fb32f84fe054e6a64736c469514a718a99fb5ce1dff95d6b28"},
 ]
 shioaji = [
-    {file = "shioaji-0.2.0.dev9-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:82d727ace05d1d667b0e4d9356434358f372b2bb8498dc1ce13f52857c24149a"},
-    {file = "shioaji-0.2.0.dev9-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:cd6af21f73ab61e9a05f399e0231e5ac27371ca4eff5ea116cc9895cd3a1a8ea"},
-    {file = "shioaji-0.2.0.dev9-cp36-cp36m-win_amd64.whl", hash = "sha256:2191c79e5291555b3e9d0fd600fc10edb9e04f4037464b6e0054df93b8827bee"},
-    {file = "shioaji-0.2.0.dev9-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:48d7315f628dfd8c979cbe84330f03bfedc19d6cf2641dc5a6c6771f44195ec0"},
-    {file = "shioaji-0.2.0.dev9-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:95221f982f952cffd917d018886905a4fabaead1da00fa851d0a94f5b2be342c"},
-    {file = "shioaji-0.2.0.dev9-cp37-cp37m-win_amd64.whl", hash = "sha256:518468a1029550eb3fc5ba46050306b98abc085f58bc01b78465e9ae80feb74b"},
-    {file = "shioaji-0.2.0.dev9-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:b016604a1e37e8c90160784c2ed1cc753a9fe6be12c4d6546a2acf3772bea8fa"},
-    {file = "shioaji-0.2.0.dev9-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:df23c24aba2531caa11e8edb1a9027572d24996bf35780c1fc5e4d5f3f870dcb"},
-    {file = "shioaji-0.2.0.dev9-cp38-cp38-win_amd64.whl", hash = "sha256:243db02e373eed2ef161afd9af1fc7d6fd216fc46f06fa60e1fe609c0844ffc9"},
+    {file = "shioaji-0.2.0.dev2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:769d6117a549151222aec3ec37d8bbdf209e734351d3b5f62d0ea78958c0ed21"},
+    {file = "shioaji-0.2.0.dev2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:a11f4693d10e83487410914ceac09af78856df1fbea036605d969b1de7d4b85e"},
+    {file = "shioaji-0.2.0.dev2-cp36-cp36m-win_amd64.whl", hash = "sha256:111153801b0874084c480963e3ae3a45c375d437501dee756e8f434fd8f7682e"},
+    {file = "shioaji-0.2.0.dev2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:c077d80af43c4c46f6f6dc8e6d52833cf66511c79abf14e2bd497b0caafb9458"},
+    {file = "shioaji-0.2.0.dev2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:855b8c7739c64ed7516cda20e8e64df13a2dbe472f5abd66e1e3b62583178099"},
+    {file = "shioaji-0.2.0.dev2-cp37-cp37m-win_amd64.whl", hash = "sha256:17694446f24934dbb15dcf3b64a92b54286d2632422eda8c72487e92a6688c2b"},
+    {file = "shioaji-0.2.0.dev2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:2ac541d6d25e39a4ff0847ec498582d4894569452ff1ade6e734bd201757f25b"},
+    {file = "shioaji-0.2.0.dev2-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:3ef23e70e43acfc8120793929597a728301f9d8324267c7fb087eb9a3bcf4f4e"},
+    {file = "shioaji-0.2.0.dev2-cp38-cp38-win_amd64.whl", hash = "sha256:ed99c202f6ec7972b23301cb860635f0f71e41c8eb6159906c978f1cf9af254d"},
 ]
 six = [
     {file = "six-1.14.0-py2.py3-none-any.whl", hash = "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"},
