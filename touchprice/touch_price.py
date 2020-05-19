@@ -36,7 +36,7 @@ class TouchOrderExecutor:
     def update_snapshot(self, contract: sj.contracts.Contract):
         code = contract.code
         if code not in self.infos.keys():
-            self.infos[code] = StatusInfo(**self.api.snapshots([contract]).snapshot[0])
+            self.infos[code] = StatusInfo(**self.api.snapshots([contract])[0])
 
     @staticmethod
     def set_price(price_info: Price, contract: sj.contracts.Contract):
