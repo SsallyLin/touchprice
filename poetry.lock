@@ -110,9 +110,8 @@ python-versions = ">=3.5"
 version = "0.14"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Read metadata from Python packages"
-marker = "python_version < \"3.8\""
 name = "importlib-metadata"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
@@ -227,7 +226,7 @@ description = "python solclient"
 name = "pysolace"
 optional = false
 python-versions = "*"
-version = "0.2.5"
+version = "0.2.6"
 
 [package.dependencies]
 loguru = "*"
@@ -342,12 +341,13 @@ description = "Sinopac All New Trading Api."
 name = "shioaji"
 optional = false
 python-versions = "*"
-version = "0.2.0.dev1"
+version = "0.2.0.dev2"
 
 [package.dependencies]
+importlib-metadata = "1.6.0"
 loguru = "0.4.1"
 pydantic = "1.0.0"
-pysolace = "0.2.5"
+pysolace = "0.2.6"
 requests = "2.22.0"
 sentry-sdk = "0.14.1"
 xxhash = "1.4.3"
@@ -402,9 +402,8 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 version = "1.4.3"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Backport of pathlib-compatible object wrapper for zip files"
-marker = "python_version < \"3.8\""
 name = "zipp"
 optional = false
 python-versions = ">=3.6"
@@ -415,7 +414,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "3f4157f27e298476f445188bd748897ade2c189bd108a6077b034da1e3e14775"
+content-hash = "6596c518838b90d65b5459693103805f1227161756863083c64ad3babe9cbdee"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -558,16 +557,18 @@ pyparsing = [
     {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
 ]
 pysolace = [
-    {file = "pysolace-0.2.5-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:07e7135be8bd47c4a0f5a9a68cf221aed9892ee3ae4a2af577c7ed6f9aa2e56b"},
-    {file = "pysolace-0.2.5-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:c89ea67bc1cdf16050821e93388f66297ada7651ad94e6f38245ada585efd759"},
-    {file = "pysolace-0.2.5-cp35-cp35m-win_amd64.whl", hash = "sha256:ca1c618f545dc302579eb5d32891d70636456b222eb594d814a4f8b17ef0ab03"},
-    {file = "pysolace-0.2.5-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:43f3194113ae86346f5bfa98fedc2487a840ec24dbbce76f6ac7ff0384bbd356"},
-    {file = "pysolace-0.2.5-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:0b0d3ac51bfeb1a6fbf67bbe69741664dba30551662c6fbfc45e1797582a771d"},
-    {file = "pysolace-0.2.5-cp36-cp36m-win_amd64.whl", hash = "sha256:8c40989528823a301622bb45a828ccc111cf7c9d0b345f493cf3171af76e5eb3"},
-    {file = "pysolace-0.2.5-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:37041b2ad4fc7b8662f587668a408d878e26a14a7d8fab1f0a95ad26ce953b32"},
-    {file = "pysolace-0.2.5-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:7c7608582122ccf0437b24af1d366c4f1e7b51e369c2df1d14e04a26a4bc8b2a"},
-    {file = "pysolace-0.2.5-cp37-cp37m-win_amd64.whl", hash = "sha256:82b7e1975021e789ff3b723933b0ab42e05609c4be318f3faef814f878b15d74"},
-    {file = "pysolace-0.2.5-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:fc5dd50437b1bf7c4bb032d7504e60eaaf2be7620ac833f32c6cd0280b8fbec0"},
+    {file = "pysolace-0.2.6-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:aa4671fcd6acf819ca3a3f7501aa0b0f60958db62f6c02df967a9d606a3e8150"},
+    {file = "pysolace-0.2.6-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:095a1e65d9e3288044211aa5711e9fde6cca911123f5ee96d67b66476d8304b9"},
+    {file = "pysolace-0.2.6-cp35-cp35m-win_amd64.whl", hash = "sha256:f463484dde76505e3060e8e507f49d3c69d9676bd2ce8f3164bdff2af48d8504"},
+    {file = "pysolace-0.2.6-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:51d39ecc4e91f14b03b96f79858a2c7c44d7c3c7cb2366f897da60b2ca422301"},
+    {file = "pysolace-0.2.6-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:7337c618421e56cdc0c0f7385779780b2bb7cf87c999f762dff9a328dfd5fad5"},
+    {file = "pysolace-0.2.6-cp36-cp36m-win_amd64.whl", hash = "sha256:f50b532ecd7aa500906ff3dba44a4e2e00868e8ac3b4729a3eb0b548b592307f"},
+    {file = "pysolace-0.2.6-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:9dd477667511c0b52cdea4019b842e32c0eb9a5c4f768e6d9e5fe8c81fff9203"},
+    {file = "pysolace-0.2.6-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:544881a492ad7584c297e3b91fb37746b5569ff664a424e912ae24679617f4b8"},
+    {file = "pysolace-0.2.6-cp37-cp37m-win_amd64.whl", hash = "sha256:36de6680c849fa6d3e7933aa5b155286ac28cf98d583e3c17d2f03ef9eb0470b"},
+    {file = "pysolace-0.2.6-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:b1cdc3ba0af83eac14b53635e659de9b64acf9359b93885c13cabfc3808e6f51"},
+    {file = "pysolace-0.2.6-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:3a7247f1f9f90a3b414772027f4cac6aafefc3b32394f788a8b1d678c5a3de46"},
+    {file = "pysolace-0.2.6-cp38-cp38-win_amd64.whl", hash = "sha256:0e7789331a8c84c626f0b4e3483779559fd2f261967849b45c6512fb09802501"},
 ]
 pytest = [
     {file = "pytest-5.4.2-py3-none-any.whl", hash = "sha256:95c710d0a72d91c13fae35dce195633c929c3792f54125919847fdcdf7caa0d3"},
@@ -590,9 +591,15 @@ sentry-sdk = [
     {file = "sentry_sdk-0.14.1-py2.py3-none-any.whl", hash = "sha256:b06dd27391fd11fb32f84fe054e6a64736c469514a718a99fb5ce1dff95d6b28"},
 ]
 shioaji = [
-    {file = "shioaji-0.2.0.dev1-cp35-cp35m-win_amd64.whl", hash = "sha256:3d813520a3fac556d1686bf9f114736c2ee3446ab7ff77b404cc79f987a958a2"},
-    {file = "shioaji-0.2.0.dev1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:f30e111f7b660cf13b4b7a84b33107d8497bd046daa7d4e59d6e93ffd1f47383"},
-    {file = "shioaji-0.2.0.dev1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:ade5a7a9c88061e92f362340dd1d90048b89ff21248ce1ec508e646d85d2aafd"},
+    {file = "shioaji-0.2.0.dev2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:769d6117a549151222aec3ec37d8bbdf209e734351d3b5f62d0ea78958c0ed21"},
+    {file = "shioaji-0.2.0.dev2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:a11f4693d10e83487410914ceac09af78856df1fbea036605d969b1de7d4b85e"},
+    {file = "shioaji-0.2.0.dev2-cp36-cp36m-win_amd64.whl", hash = "sha256:111153801b0874084c480963e3ae3a45c375d437501dee756e8f434fd8f7682e"},
+    {file = "shioaji-0.2.0.dev2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:c077d80af43c4c46f6f6dc8e6d52833cf66511c79abf14e2bd497b0caafb9458"},
+    {file = "shioaji-0.2.0.dev2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:855b8c7739c64ed7516cda20e8e64df13a2dbe472f5abd66e1e3b62583178099"},
+    {file = "shioaji-0.2.0.dev2-cp37-cp37m-win_amd64.whl", hash = "sha256:17694446f24934dbb15dcf3b64a92b54286d2632422eda8c72487e92a6688c2b"},
+    {file = "shioaji-0.2.0.dev2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:2ac541d6d25e39a4ff0847ec498582d4894569452ff1ade6e734bd201757f25b"},
+    {file = "shioaji-0.2.0.dev2-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:3ef23e70e43acfc8120793929597a728301f9d8324267c7fb087eb9a3bcf4f4e"},
+    {file = "shioaji-0.2.0.dev2-cp38-cp38-win_amd64.whl", hash = "sha256:ed99c202f6ec7972b23301cb860635f0f71e41c8eb6159906c978f1cf9af254d"},
 ]
 six = [
     {file = "six-1.14.0-py2.py3-none-any.whl", hash = "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"},
