@@ -137,9 +137,10 @@ class TouchOrderExecutor:
             code = topic.split("/")[-1]
             if code in self.infos.keys():
                 info = self.infos[code]
-                info.buy_price = quote["BidPrice"][0]
-                info.sell_price = quote["AskPrice"][0]
-                self.touch(code)
+                if 0 not in quote["AskVolume"]:
+                    info.buy_price = quote["BidPrice"][0]
+                    info.sell_price = quote["AskPrice"][0]
+                    self.touch(code)
 
     def show_condition(self, code: str = None):
         if not code:
