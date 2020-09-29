@@ -364,6 +364,18 @@ testcase_integration = [
         1,
     ],
     [
+        "QUT/2890",
+        {
+            "AskPrice": [0, 0, 0, 0, 0],
+            "AskVolume": [0, 0, 0, 0, 0],
+            "BidPrice": [0, 0, 0, 0, 0],
+            "BidVolume": [0, 0, 0, 0, 0],
+            "Date": "2020/05/21",
+            "Time": "09:46:01.835229",
+        },
+        0,
+    ],
+    [
         "XXX/XX",
         {
             "Close": [12],

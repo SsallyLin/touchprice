@@ -13,6 +13,8 @@ from touchprice.condition import (
     StatusInfo,
     Qty,
     QtyGap,
+    LossProfitCmd,
+    StoreLossProfit,
 )
 
 
@@ -28,10 +30,13 @@ def get_contracts(api: sj.Shioaji):
 class TouchOrderExecutor:
     def __init__(self, api: sj.Shioaji):
         self.api: sj.Shioaji = api
-        self.conditions: typing.Dict[str, typing.List[StoreCond]] = {}
+        self.conditions: typing.Dict[
+            str, typing.List[typing.Union[StoreLossProfit, StoreCond]]
+        ] = {}
         self.infos: typing.Dict[str, StatusInfo] = {}
         self.contracts: dict = get_contracts(self.api)
         self.api.quote.set_quote_callback(self.integration)
+        self.orders: typing.Dict[str, typing.Dict[str, StoreLossProfit]] = {}
 
     def update_snapshot(self, contract: sj.contracts.Contract):
         code = contract.code
@@ -61,6 +66,8 @@ class TouchOrderExecutor:
                     )
             tconds_dict["order_contract"] = self.contracts[condition.order_cmd.code]
             tconds_dict["order"] = condition.order_cmd.order
+            if condition.lossprofit_cmd:
+                tconds_dict["excuted_cb"] = place_order_cb
             return StoreCond(**tconds_dict)
 
     def add_condition(self, condition: TouchOrderCond):
@@ -105,20 +112,45 @@ class TouchOrderExecutor:
             info = self.infos[code].dict()
             for num, conds in enumerate(conditions):
                 if not conds.excuted:
-                    order = conds.order
                     order_contract = conds.order_contract
-                    cond = conds.dict()
-                    cond.pop("order")
-                    cond.pop("order_contract")
-                    cond.pop("excuted")
-                    cond.pop("excuted_cb")
-                    if all(
-                        self.touch_cond(value, info[key]) for key, value in cond.items()
-                    ):
-                        self.conditions[code][num].excuted = True
-                        self.conditions[code][num].result = self.api.place_order(
-                            order_contract, order, cb=self.conditions[code][num].excuted_cb
-                        )
+                    if isinstance(conds, StoreCond):
+                        order = conds.order
+                        cond = conds.dict()
+                        cond.pop("order")
+                        cond.pop("order_contract")
+                        cond.pop("excuted")
+                        cond.pop("excuted_cb")
+                        if all(
+                            self.touch_cond(value, info[key])
+                            for key, value in cond.items()
+                        ):
+                            self.conditions[code][num].excuted = True
+                            self.conditions[code][num].result = self.api.place_order(
+                                order_contract,
+                                order,
+                                cb=self.conditions[code][num].excuted_cb,
+                            )
+                    elif isinstance(conds, StoreLossProfit):
+                        loss_order = conds.loss_order
+                        profit_order = conds.profit_order
+                        cond = conds.dict()
+                        cond.pop("loss_order")
+                        cond.pop("profit_order")
+                        cond.pop("order_contract")
+                        cond.pop("excuted")
+                        cond.pop("excuted_cb")
+                        order = sj.Order()
+                        if self.touch_cond(loss_order, info["close"]):
+                            order = loss_order
+                        elif self.touch_cond(profit_order, info["close"]):
+                            order = profit_order
+                        if order:
+                            self.conditions[code][num].excuted = True
+                            self.conditions[code][num].result = self.api.place_order(
+                                order_contract,
+                                order,
+                                cb=self.conditions[code][num].excuted_cb,
+                            )
 
     def integration(self, topic: str, quote: dict):
         if "Simtrade" in quote.keys():
@@ -147,3 +179,29 @@ class TouchOrderExecutor:
             return self.conditions
         else:
             return self.conditions[code]
+
+    def place_order_cb(self, state, msg):
+        if "Order" in state:
+            code = msg["contract"]["code"]
+            conds = self.conditions[code] if code in self.conditions else []
+            for cond in conds:
+                if cond.result == msg:
+                    seqno = msg["order"]["seqno"]
+                    price = float(msg["order"]["price"])
+                    storecond = StoreLossProfit(
+                        loss_close=cond.lossprofit_cmd.loss_pricegap,
+                        profit_close=cond.lossprofit_cmd.profit_pricegap,
+                        order_contract=msg["contract"],
+                        loss_order=cond.lossprofit_cmd.lossorder_cmd,
+                        profit_order=cond.lossprofit_cmd.profitorder_cmd,
+                    )
+                    self.orders[seqno][code] = storecond
+        elif "Deal" in state:
+            seqno = msg["seqno"]
+            if self.orders[seqno]:
+                code = msg["code"]
+                store_cond = self.orders[seqno][code]
+                if code in self.conditions.keys():
+                    self.conditions[code].append(store_cond)
+                else:
+                    self.conditions[code] = [store_cond]

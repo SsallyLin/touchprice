@@ -2,6 +2,7 @@ import shioaji as sj
 from touchprice.core import Base
 from touchprice.constant import Trend, PriceType
 from typing import Callable
+from pydantic import StrictInt
 
 
 class PriceGap(Base):
@@ -78,12 +79,40 @@ class OrderCmd(Base):
         super().__init__(**dict(code=code, order=order))
 
 
+class LossProfitCmd(Base):
+    loss_pricegap: PriceGap = None
+    loss_order: sj.Order = None
+    profit_pricegap: PriceGap = None
+    profit_order: sj.Order = None
+
+
+class StoreLossProfit(Base):
+    loss_close: PriceGap = None
+    profit_close: PriceGap = None
+    order_contract: sj.contracts.Contract
+    loss_order: sj.Order = None
+    profit_order: sj.Order = None
+    result: sj.order.Trade = None
+    excuted_cb: Callable[[sj.order.Trade], sj.order.Trade] = print
+    excuted: bool = False
+
+
 class TouchOrderCond(Base):
     touch_cmd: TouchCmd
     order_cmd: OrderCmd
+    lossprofit_cmd: LossProfitCmd = None
 
-    def __init__(self, touch_cmd: TouchCmd, order_cmd: OrderCmd):
-        super().__init__(**dict(touch_cmd=touch_cmd, order_cmd=order_cmd))
+    def __init__(
+        self,
+        touch_cmd: TouchCmd,
+        order_cmd: OrderCmd,
+        lossprofit_cmd: typing.List[LossProfitCmd] = None,
+    ):
+        super().__init__(
+            **dict(
+                touch_cmd=touch_cmd, order_cmd=order_cmd, lossprofit_cmd=lossprofit_cmd,
+            )
+        )
 
 
 class StoreCond(Base):
