@@ -16,6 +16,7 @@ from touchprice import (
     StatusInfo,
     Qty,
     QtyGap,
+    StoreLossProfit,
 )
 
 
@@ -288,7 +289,7 @@ testcase_touch = [
 
 
 @pytest.mark.parametrize("code, price, close_price, order_count", testcase_touch)
-def test_touch(
+def test_touch_storecond(
     mocker,
     contract: Future,
     order: Order,
@@ -304,6 +305,96 @@ def test_touch(
                 close=price,
                 order_contract=contract["TXFC0"],
                 order=order,
+                excuted=False,
+            )
+        ]
+    }
+    touch_order.infos["TXFD0"] = StatusInfo(
+        close=close_price,
+        buy_price=11,
+        sell_price=11,
+        high=11,
+        low=11,
+        change_price=11,
+        change_rate=1,
+        volume=1,
+        total_volume=1,
+    )
+    touch_order.touch(code)
+    assert touch_order.api.place_order.call_count == order_count
+
+
+testcase_touch_profit = [
+    [
+        "TXFD0",
+        PriceGap(price=9900, price_type="LimitPrice", trend="Down"),
+        None,
+        9900,
+        1,
+    ],
+    [
+        "TXFD0",
+        PriceGap(price=9900, price_type="LimitPrice", trend="Down"),
+        None,
+        9800,
+        1,
+    ],
+    [
+        "TXFD0",
+        PriceGap(price=9900, price_type="LimitPrice", trend="Down"),
+        None,
+        9901,
+        0,
+    ],
+    ["TXFD0", None, PriceGap(price=9900, price_type="LimitPrice", trend="Up"), 9900, 1],
+    ["TXFD0", None, PriceGap(price=9900, price_type="LimitPrice", trend="Up"), 9901, 1],
+    ["TXFD0", None, PriceGap(price=9900, price_type="LimitPrice", trend="Up"), 9800, 0],
+    [
+        "TXFD0",
+        PriceGap(price=9800, price_type="LimitPrice", trend="Down"),
+        PriceGap(price=10000, price_type="LimitPrice", trend="Up"),
+        9900,
+        0,
+    ],
+    [
+        "TXFD0",
+        PriceGap(price=9900, price_type="LimitPrice", trend="Down"),
+        PriceGap(price=10000, price_type="LimitPrice", trend="Up"),
+        9900,
+        1,
+    ],
+    [
+        "TXFD0",
+        PriceGap(price=9800, price_type="LimitPrice", trend="Down"),
+        PriceGap(price=9900, price_type="LimitPrice", trend="Up"),
+        9900,
+        1,
+    ],
+]
+
+
+@pytest.mark.parametrize(
+    "code, loss_close, profit_close, close_price, order_count", testcase_touch_profit
+)
+def test_touch_storelossprofit(
+    mocker,
+    loss_close: PriceGap,
+    profit_close: PriceGap,
+    contract: contract,
+    order: Order,
+    close_price: int,
+    code: str,
+    order_count: int,
+    touch_order: TouchOrderExecutor,
+):
+    touch_order.conditions = {
+        "TXFD0": [
+            StoreLossProfit(
+                loss_close=loss_close,
+                profit_close=profit_close,
+                order_contract=contract["TXFC0"],
+                loss_order=order,
+                profit_order=order,
                 excuted=False,
             )
         ]

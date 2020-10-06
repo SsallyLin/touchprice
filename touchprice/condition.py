@@ -1,8 +1,8 @@
+import typing
 import shioaji as sj
 from touchprice.core import Base
 from touchprice.constant import Trend, PriceType
 from typing import Callable
-from pydantic import StrictInt
 
 
 class PriceGap(Base):

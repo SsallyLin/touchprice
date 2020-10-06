@@ -11,5 +11,6 @@ from .touch_price import (
     StatusInfo,
     Qty,
     QtyGap,
+    StoreLossProfit,
 )
 from .core import Base
