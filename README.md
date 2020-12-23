@@ -96,4 +96,8 @@ touch.add_condition(condition)
 If not set code can show all conditions, else just show coditions of code. 
 ``` 
 touch.show_condition(code)
-``` 
+```
+
+# Disclaimer
+The package are used at your own risk.
+
