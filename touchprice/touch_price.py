@@ -41,7 +41,13 @@ class TouchOrderExecutor:
     def update_snapshot(self, contract: sj.contracts.Contract):
         code = contract.code
         if code not in self.infos.keys():
-            self.infos[code] = StatusInfo(**self.api.snapshots([contract])[0])
+            snapshot = self.api.snapshots([contract])[0]
+            self.infos[code] = StatusInfo(**snapshot)
+            volume = self.infos[code].volume
+            if snapshot.tick_type == "Sell":
+                self.infos[code].sell_volume = volume
+            else:
+                self.infos[code].buy_volume = volume
 
     @staticmethod
     def set_price(price_info: Price, contract: sj.contracts.Contract):
@@ -168,6 +174,16 @@ class TouchOrderExecutor:
                 info.low = info.close if info.low > info.close else info.low
                 info.total_volume = quote["VolSum"][0]
                 info.volume = quote["Volume"][0]
+                if ticktype == 1:
+                    info.buy_volume = (
+                        info.buy_volume + info.volume if info.buy_volume else info.volume
+                    )
+                    info.sell_volumn = 0
+                elif ticktype == 2:
+                    info.sell_volume = (
+                        info.sell_volume + info.volume if info.sell_volume else info.volume
+                    )
+                    info.buy_volumn = 0
                 self.touch(code)
         elif topic.startswith("QUT/") or topic.startswith("Q/"):
             code = topic.split("/")[-1]

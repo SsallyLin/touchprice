@@ -45,6 +45,8 @@ class TouchCmd(Base):
     low: Price = None
     volume: Qty = None
     total_volume: Qty = None
+    buy_volume: Qty = None
+    sell_volume: Qty = None
 
     def __init__(
         self,
@@ -56,6 +58,8 @@ class TouchCmd(Base):
         low: Price = None,
         volume: Qty = None,
         total_volume: Qty = None,
+        buy_volume: Qty = None,
+        sell_volume: Qty = None,
     ):
         super().__init__(
             **dict(
@@ -67,6 +71,8 @@ class TouchCmd(Base):
                 low=low,
                 volume=volume,
                 total_volume=total_volume,
+                buy_volume=buy_volume,
+                sell_volume=sell_volume,
             )
         )
 
@@ -140,3 +146,5 @@ class StatusInfo(Base):
     change_rate: float  # 幅度
     volume: int
     total_volume: int
+    buy_volume: int = 0
+    sell_volume: int = 0
