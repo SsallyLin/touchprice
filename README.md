@@ -44,6 +44,8 @@ touch_cmd =
 * low: condition.Price = None,
 * volume: condition.Qty = None,
 * total_volume: condition.Qty = None,
+* ask_volume: condition.Qty = None,
+* bid_volume: condition.Qty = None,
 
 
 
