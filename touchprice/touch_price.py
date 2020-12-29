@@ -176,14 +176,14 @@ class TouchOrderExecutor:
                         if info.ask_volume
                         else info.volume
                     )
-                    info.bid_volumn = 0
+                    info.bid_volume = 0
                 elif quote["TickType"] == 2:
                     info.bid_volume = (
                         info.bid_volume + info.volume
                         if info.bid_volume
                         else info.volume
                     )
-                    info.ask_volumn = 0
+                    info.ask_volume = 0
                 self.touch(code)
         elif topic.startswith("QUT/") or topic.startswith("Q/"):
             code = topic.split("/")[-1]

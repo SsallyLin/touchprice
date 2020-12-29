@@ -233,6 +233,9 @@ testcase_touch_cond = [
     [{"price": 11, "trend": "Down"}, 12, None],
     [{"price": 11, "trend": "Equal"}, 11, True],
     [{"price": 11, "trend": "Equal"}, 10, None],
+    [{"ask_volume": 11, "trend": "Equal"}, 11, True],
+    [{"ask_volume": 11, "trend": "Equal"}, 10, None],
+    [{"ask_volume": 11, "trend": "Up"}, 12, True],
 ]
 
 
@@ -426,7 +429,10 @@ testcase_integration = [
             "VolSum": [16415],
             "Volume": [1],
             "Simtrade": 1,
+            "TickType": 1,
         },
+        0,
+        7,
         0,
     ],
     [
@@ -439,7 +445,26 @@ testcase_integration = [
             "Time": "10:46:27.610865",
             "VolSum": [16415],
             "Volume": [1],
+            "TickType": 1,
         },
+        1,
+        8,
+        0,
+    ],
+    [
+        "MKT/2890",
+        {
+            "AmountSum": [4869957500.0],
+            "Close": [297.5],
+            "Date": "2020/05/21",
+            "TickType": [1],
+            "Time": "10:46:27.610865",
+            "VolSum": [16415],
+            "Volume": [1],
+            "TickType": 2,
+        },
+        1,
+        0,
         1,
     ],
     [
@@ -453,6 +478,8 @@ testcase_integration = [
             "Time": "09:46:01.835229",
         },
         1,
+        7,
+        0,
     ],
     [
         "QUT/2890",
@@ -465,6 +492,8 @@ testcase_integration = [
             "Time": "09:46:01.835229",
         },
         0,
+        7,
+        0,
     ],
     [
         "XXX/XX",
@@ -476,17 +505,23 @@ testcase_integration = [
             "AskPrice": [11],
         },
         0,
+        7,
+        0,
     ],
 ]
 
 
-@pytest.mark.parametrize("topic, quote, touch_count", testcase_integration)
+@pytest.mark.parametrize(
+    "topic, quote, touch_count, ask_volume, bid_volume", testcase_integration
+)
 def test_integration(
     mocker,
     touch_order: TouchOrderExecutor,
     topic: str,
     quote: typing.Dict,
     touch_count: int,
+    ask_volume: int,
+    bid_volume: int,
 ):
     touch_order.infos = {
         "2890": StatusInfo(
@@ -499,11 +534,15 @@ def test_integration(
             change_rate=1.0,
             volume=1,
             total_volume=10,
+            ask_volume=7,
+            bid_volume=0,
         )
     }
     touch_order.touch = mocker.MagicMock()
     touch_order.integration(topic, quote)
     assert touch_order.touch.call_count == touch_count
+    assert touch_order.infos["2890"].ask_volume == ask_volume
+    assert touch_order.infos["2890"].bid_volume == bid_volume
 
 
 testcase_show_condition = [["", 2], ["TXFC0", 1]]
@@ -535,3 +574,11 @@ def test_show_condition(
     }
     res = len(touch_order.show_condition(code))
     assert res == length
+
+
+testcase_place_order_cb = []
+
+
+@pytest.mark.parametrize("state, msg", testcase_place_order_cb)
+def test_place_order_cb(state, msg):
+    pass
