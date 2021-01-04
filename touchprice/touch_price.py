@@ -1,5 +1,6 @@
 import shioaji as sj
 import typing
+import datetime
 from pydantic import StrictInt
 from functools import partial
 from touchprice.constant import Trend, PriceType
@@ -43,6 +44,9 @@ class TouchOrderExecutor:
         if code not in self.infos.keys():
             snapshot = self.api.snapshots([contract])[0]
             self.infos[code] = StatusInfo(**snapshot)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            add_ts = now.timestamp()
+            self.infos[code].add_ts = add_ts
             volume = self.infos[code].volume
 
     @staticmethod
@@ -62,7 +66,7 @@ class TouchOrderExecutor:
         tconds_dict.pop("code")
         if tconds_dict:
             for key, value in tconds_dict.items():
-                if key not in ["volume", "total_volume"]:
+                if key not in ["volume", "total_volume", "ask_volume", "bid_volume"]:
                     tconds_dict[key] = TouchOrderExecutor.set_price(
                         Price(**value), contract
                     )
@@ -170,14 +174,14 @@ class TouchOrderExecutor:
                 info.low = info.close if info.low > info.close else info.low
                 info.total_volume = quote["VolSum"][0]
                 info.volume = quote["Volume"][0]
-                if quote["TickType"] == 1:
+                if quote["TickType"][0] == 1:
                     info.ask_volume = (
                         info.ask_volume + info.volume
                         if info.ask_volume
                         else info.volume
                     )
                     info.bid_volume = 0
-                elif quote["TickType"] == 2:
+                elif quote["TickType"][0] == 2:
                     info.bid_volume = (
                         info.bid_volume + info.volume
                         if info.bid_volume

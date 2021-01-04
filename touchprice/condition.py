@@ -129,6 +129,8 @@ class StoreCond(Base):
     low: PriceGap = None
     volume: QtyGap = None
     total_volume: QtyGap = None
+    ask_volume: QtyGap = None
+    bid_volume: QtyGap = None
     order_contract: sj.contracts.Contract
     order: sj.Order
     result: sj.order.Trade = None
@@ -148,3 +150,4 @@ class StatusInfo(Base):
     total_volume: int
     ask_volume: int = 0
     bid_volume: int = 0
+    add_ts: int = 0
