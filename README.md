@@ -22,7 +22,7 @@ import shioaji as sj
 api = sj.Shioaji()
 api.login(USERID, PASSWORD)
 api.activate_ca(CA_PATH, CA_USERID, CA_PASSWORD)
-touch = tp.TouchOrder(api)
+touch = tp.TouchOrderExecutor(api)
 ```   
 ## Condition
 TouchOrderCond contains touch condition and order condition. 
@@ -70,7 +70,7 @@ order_cmd = tp.OrderCmd(
         price=10,
         quantity=1,
         order_type="ROD",
-        price_type="LMT",
+        price_type="LMT",)
     )
 
 ```
@@ -84,8 +84,8 @@ order_cmd = tp.OrderCmd(
 ## Add condition to order    
 ```
 condition = tp.TouchOrderCond(
-                touch_cmd = touch_cond, 
-                order_cmd = order_cond
+                touch_cmd = touch_cmd, 
+                order_cmd = order_cmd
             )
 touch.add_condition(condition)
 ``` 
