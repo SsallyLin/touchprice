@@ -36,7 +36,7 @@ class TouchOrderExecutor:
         ] = {}
         self.infos: typing.Dict[str, StatusInfo] = {}
         self.contracts: dict = get_contracts(self.api)
-        self.api.quote.set_quote_callback(self.integration)
+        self.api.quote.set_on_tick_stk_v1_callback(self.integration)
         self.orders: typing.Dict[str, typing.Dict[str, StoreLossProfit]] = {}
 
     def update_snapshot(self, contract: sj.contracts.Contract):
@@ -62,8 +62,9 @@ class TouchOrderExecutor:
     def adjust_condition(
         self, condition: TouchOrderCond, contract: sj.contracts.Contract
     ):
-        tconds_dict = condition.touch_cmd.dict()
-        tconds_dict.pop("code")
+        tconds_dict = {
+            key: dict(value) for key, value in condition.touch_cmd if not key == "code"
+        }
         if tconds_dict:
             for key, value in tconds_dict.items():
                 if key not in ["volume", "total_volume", "ask_volume", "bid_volume"]:

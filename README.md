@@ -20,7 +20,7 @@ import touchprice as tp
 import shioaji as sj
 
 api = sj.Shioaji()
-api.login(USERID, PASSWORD)
+api.login("YOUR_API_KEY", "YOUR_SECRET_KEY")
 api.activate_ca(CA_PATH, CA_USERID, CA_PASSWORD)
 touch = tp.TouchOrderExecutor(api)
 ```   
