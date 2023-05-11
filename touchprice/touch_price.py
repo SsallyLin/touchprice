@@ -1,6 +1,7 @@
 import shioaji as sj
 import typing
 import datetime
+from shioaji import TickSTKv1, Exchange, BidAskSTKv1
 from pydantic import StrictInt
 from functools import partial
 from touchprice.constant import Trend, PriceType
@@ -36,7 +37,8 @@ class TouchOrderExecutor:
         ] = {}
         self.infos: typing.Dict[str, StatusInfo] = {}
         self.contracts: dict = get_contracts(self.api)
-        self.api.quote.set_on_tick_stk_v1_callback(self.integration)
+        self.api.quote.set_on_tick_stk_v1_callback(self.integration_tick)
+        self.api.quote.set_on_bidask_stk_v1_callback(self.integration_bidask)
         self.orders: typing.Dict[str, typing.Dict[str, StoreLossProfit]] = {}
 
     def update_snapshot(self, contract: sj.contracts.Contract):
@@ -163,26 +165,38 @@ class TouchOrderExecutor:
                                 cb=self.conditions[code][num].excuted_cb,
                             )
 
-    def integration(self, topic: str, quote: dict):
-        if "Simtrade" in quote.keys():
+    def integration_bidask(self, exchange: Exchange, bidask: BidAskSTKv1):
+        if bidask.simtrade == 1:
             pass
-        elif topic.startswith("MKT/") or topic.startswith("L/"):
-            code = topic.split("/")[-1]
+        else:
+            code = bidask.code
             if code in self.infos.keys():
                 info = self.infos[code]
-                info.close = quote["Close"][0]
-                info.high = info.close if info.high < info.close else info.high
-                info.low = info.close if info.low > info.close else info.low
-                info.total_volume = quote["VolSum"][0]
-                info.volume = quote["Volume"][0]
-                if quote["TickType"][0] == 1:
+                if 0 not in bidask.ask_volume:
+                    info.buy_price = bidask.bid_price[0]
+                    info.sell_price = bidask.ask_price[0]
+                    self.touch(code)
+
+    def integration_tick(self, exchange: Exchange, tick: TickSTKv1):
+        if tick.simtrade == 1:
+            pass
+        else:
+            code = tick.code
+            if code in self.infos.keys():
+                info = self.infos[code]
+                info.close = tick.close
+                info.high = tick.high
+                info.low = tick.low
+                info.total_volume = tick.total_volume
+                info.volume = tick.volume
+                if tick.tick_type == 1:
                     info.ask_volume = (
                         info.ask_volume + info.volume
                         if info.ask_volume
                         else info.volume
                     )
                     info.bid_volume = 0
-                elif quote["TickType"][0] == 2:
+                elif tick.tick_type == 2:
                     info.bid_volume = (
                         info.bid_volume + info.volume
                         if info.bid_volume
@@ -190,14 +204,6 @@ class TouchOrderExecutor:
                     )
                     info.ask_volume = 0
                 self.touch(code)
-        elif topic.startswith("QUT/") or topic.startswith("Q/"):
-            code = topic.split("/")[-1]
-            if code in self.infos.keys():
-                info = self.infos[code]
-                if 0 not in quote["AskVolume"]:
-                    info.buy_price = quote["BidPrice"][0]
-                    info.sell_price = quote["AskPrice"][0]
-                    self.touch(code)
 
     def show_condition(self, code: str = None):
         if not code:
