@@ -38,7 +38,9 @@ class TouchOrderExecutor:
         self.infos: typing.Dict[str, StatusInfo] = {}
         self.contracts: dict = get_contracts(self.api)
         self.api.quote.set_on_tick_stk_v1_callback(self.integration_tick)
+        self.api.quote.set_on_tick_fop_v1_callback(self.integration_tick)
         self.api.quote.set_on_bidask_stk_v1_callback(self.integration_bidask)
+        self.api.quote.set_on_bidask_fop_v1_callback(self.integration_bidask)
         self.orders: typing.Dict[str, typing.Dict[str, StoreLossProfit]] = {}
 
     def update_snapshot(self, contract: sj.contracts.Contract):

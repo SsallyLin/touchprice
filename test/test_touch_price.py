@@ -1,8 +1,11 @@
 import pytest
 import typing
+from decimal import Decimal
+from dataclasses import dataclass
 from shioaji.contracts import Future
 from shioaji.order import Order
 from shioaji.data import Snapshot
+from shioaji import Exchange
 from touchprice import (
     TouchOrderExecutor,
     TouchOrderCond,
@@ -18,6 +21,30 @@ from touchprice import (
     QtyGap,
     StoreLossProfit,
 )
+
+
+@dataclass
+class BidAskSTKv1:
+    code: str
+    bid_price: typing.List[Decimal]
+    bid_volume: typing.List[int]
+    ask_price: typing.List[Decimal]
+    ask_volume: typing.List[int]
+    simtrade: bool
+
+
+@dataclass
+class TickSTKv1:
+    code: str
+    close: Decimal
+    high: Decimal
+    low: Decimal
+    amount: Decimal
+    total_amount: Decimal
+    volume: int
+    total_volume: int
+    tick_type: int
+    simtrade: bool
 
 
 @pytest.fixture()
@@ -178,7 +205,8 @@ def test_adjust_condition(
     expected: bool,
 ):
     touchorder_cond = TouchOrderCond(
-        touch_cmd=touch_cmd, order_cmd=OrderCmd(code="TXFC0", order=order),
+        touch_cmd=touch_cmd,
+        order_cmd=OrderCmd(code="TXFC0", order=order),
     )
     touch_order.contracts = contract
     contract = touch_order.contracts["TXFC0"]
@@ -241,7 +269,10 @@ testcase_touch_cond = [
 
 @pytest.mark.parametrize("info, value, expected", testcase_touch_cond)
 def test_touch_cond(
-    info: typing.Dict, value: float, expected: bool, touch_order: TouchOrderExecutor,
+    info: typing.Dict,
+    value: float,
+    expected: bool,
+    touch_order: TouchOrderExecutor,
 ):
     res = touch_order.touch_cond(info, value)
     assert res == expected
@@ -417,93 +448,75 @@ def test_touch_storelossprofit(
     assert touch_order.api.place_order.call_count == order_count
 
 
-testcase_integration = [
+testcase_integration_tick = [
     [
-        "MKT/2890",
-        {
-            "AmountSum": [4869957500.0],
-            "Close": [297.5],
-            "Date": "2020/05/21",
-            "TickType": [1],
-            "Time": "10:46:27.610865",
-            "VolSum": [16415],
-            "Volume": [1],
-            "Simtrade": 1,
-            "TickType": [1],
-        },
+        Exchange.TSE,
+        TickSTKv1(
+            "2890",
+            Decimal("590"),
+            Decimal("593"),
+            Decimal("587"),
+            Decimal("590000"),
+            Decimal("8540101000"),
+            1,
+            14498,
+            1,
+            1,
+        ),
         0,
         7,
         0,
     ],
     [
-        "MKT/2890",
-        {
-            "AmountSum": [4869957500.0],
-            "Close": [297.5],
-            "Date": "2020/05/21",
-            "TickType": [1],
-            "Time": "10:46:27.610865",
-            "VolSum": [16415],
-            "Volume": [1],
-            "TickType": [1],
-        },
+        Exchange.TSE,
+        TickSTKv1(
+            "2890",
+            Decimal("590"),
+            Decimal("593"),
+            Decimal("587"),
+            Decimal("590000"),
+            Decimal("8540101000"),
+            1,
+            14498,
+            1,
+            0,
+        ),
         1,
         8,
         0,
     ],
     [
-        "MKT/2890",
-        {
-            "AmountSum": [4869957500.0],
-            "Close": [297.5],
-            "Date": "2020/05/21",
-            "TickType": [1],
-            "Time": "10:46:27.610865",
-            "VolSum": [16415],
-            "Volume": [1],
-            "TickType": [2],
-        },
+        Exchange.TSE,
+        TickSTKv1(
+            "2890",
+            Decimal("590"),
+            Decimal("593"),
+            Decimal("587"),
+            Decimal("590000"),
+            Decimal("8540101000"),
+            1,
+            14498,
+            2,
+            0,
+        ),
         1,
         0,
         1,
     ],
     [
-        "QUT/2890",
-        {
-            "AskPrice": [11.75, 11.8, 11.85, 11.9, 11.95],
-            "AskVolume": [853, 1269, 1049, 730, 198],
-            "BidPrice": [11.7, 11.65, 11.6, 11.55, 11.5],
-            "BidVolume": [534, 1331, 1146, 990, 2423],
-            "Date": "2020/05/21",
-            "Time": "09:46:01.835229",
-        },
-        1,
-        7,
-        0,
-    ],
-    [
-        "QUT/2890",
-        {
-            "AskPrice": [0, 0, 0, 0, 0],
-            "AskVolume": [0, 0, 0, 0, 0],
-            "BidPrice": [0, 0, 0, 0, 0],
-            "BidVolume": [0, 0, 0, 0, 0],
-            "Date": "2020/05/21",
-            "Time": "09:46:01.835229",
-        },
-        0,
-        7,
-        0,
-    ],
-    [
-        "XXX/XX",
-        {
-            "Close": [12],
-            "VolSum": [1],
-            "Volume": [1],
-            "BidPrice": [11],
-            "AskPrice": [11],
-        },
+        Exchange.TSE,
+        TickSTKv1(
+            "1234",
+            Decimal("590"),
+            Decimal("593"),
+            Decimal("587"),
+            Decimal("590000"),
+            Decimal("8540101000"),
+            1,
+            14498,
+            1,
+            0,
+        ),
         0,
         7,
         0,
@@ -512,13 +525,13 @@ testcase_integration = [
 
 
 @pytest.mark.parametrize(
-    "topic, quote, touch_count, ask_volume, bid_volume", testcase_integration
+    "exchange, tick, touch_count, ask_volume, bid_volume", testcase_integration_tick
 )
-def test_integration(
+def test_integration_tick(
     mocker,
     touch_order: TouchOrderExecutor,
-    topic: str,
-    quote: typing.Dict,
+    exchange: Exchange,
+    tick: TickSTKv1,
     touch_count: int,
     ask_volume: int,
     bid_volume: int,
@@ -539,7 +552,123 @@ def test_integration(
         )
     }
     touch_order.touch = mocker.MagicMock()
-    touch_order.integration(topic, quote)
+    touch_order.integration_tick(exchange, tick)
+    assert touch_order.touch.call_count == touch_count
+    assert touch_order.infos["2890"].ask_volume == ask_volume
+    assert touch_order.infos["2890"].bid_volume == bid_volume
+
+
+testcase_integration_bidask = [
+    [
+        Exchange.TSE,
+        BidAskSTKv1(
+            "2890",
+            [
+                Decimal("589"),
+                Decimal("588"),
+                Decimal("587"),
+                Decimal("586"),
+                Decimal("585"),
+            ],
+            [59391, 224490, 74082, 68570, 125246],
+            [
+                Decimal("590"),
+                Decimal("591"),
+                Decimal("592"),
+                Decimal("593"),
+                Decimal("594"),
+            ],
+            [26355, 9680, 18087, 11773, 3568],
+            0,
+        ),
+        1,
+        7,
+        0,
+    ],
+    [
+        Exchange.TSE,
+        BidAskSTKv1(
+            "2890",
+            [
+                Decimal("0"),
+                Decimal("0"),
+                Decimal("0"),
+                Decimal("0"),
+                Decimal("0"),
+            ],
+            [0, 0, 0, 0, 0],
+            [
+                Decimal("0"),
+                Decimal("0"),
+                Decimal("0"),
+                Decimal("0"),
+                Decimal("0"),
+            ],
+            [0, 0, 0, 0, 0],
+            1,
+        ),
+        0,
+        7,
+        0,
+    ],
+    [
+        Exchange.TSE,
+        BidAskSTKv1(
+            "2330",
+            [
+                Decimal("589"),
+                Decimal("588"),
+                Decimal("587"),
+                Decimal("586"),
+                Decimal("585"),
+            ],
+            [939, 224490, 74082, 68570, 125246],
+            [
+                Decimal("590"),
+                Decimal("591"),
+                Decimal("592"),
+                Decimal("593"),
+                Decimal("594"),
+            ],
+            [26355, 9680, 18087, 11773, 3568],
+            1,
+        ),
+        0,
+        7,
+        0,
+    ],
+]
+
+
+@pytest.mark.parametrize(
+    "exchange, bidask, touch_count, ask_volume, bid_volume", testcase_integration_bidask
+)
+def test_integration_bidask(
+    mocker,
+    touch_order: TouchOrderExecutor,
+    exchange: Exchange,
+    bidask: BidAskSTKv1,
+    touch_count: int,
+    ask_volume: int,
+    bid_volume: int,
+):
+    touch_order.infos = {
+        "2890": StatusInfo(
+            close=11,
+            buy_price=11,
+            sell_price=11,
+            high=11,
+            low=11,
+            change_price=1,
+            change_rate=1.0,
+            volume=1,
+            total_volume=10,
+            ask_volume=7,
+            bid_volume=0,
+        )
+    }
+    touch_order.touch = mocker.MagicMock()
+    touch_order.integration_bidask(exchange, bidask)
     assert touch_order.touch.call_count == touch_count
     assert touch_order.infos["2890"].ask_volume == ask_volume
     assert touch_order.infos["2890"].bid_volume == bid_volume
