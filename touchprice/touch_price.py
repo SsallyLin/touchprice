@@ -132,7 +132,7 @@ class TouchOrderExecutor:
                         cond.pop("excuted")
                         cond.pop("excuted_cb")
                         if all(
-                            self.touch_cond(value, info[key])
+                            self.touch_cond(value, float(info[key]))
                             for key, value in cond.items()
                         ):
                             self.conditions[code][num].excuted = True
