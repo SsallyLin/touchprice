@@ -5,7 +5,7 @@ description = "shioaji touchprice extentions"
 authors = ["Sally <nipolikae@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 requests = "2.22.0"
 shioaji = "^1.0"
 

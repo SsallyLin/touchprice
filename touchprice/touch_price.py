@@ -44,7 +44,7 @@ class TouchOrderExecutor:
         self.orders: typing.Dict[str, typing.Dict[str, StoreLossProfit]] = {}
 
     def update_snapshot(self, contract: sj.contracts.Contract):
-        code = contract.code
+        code = contract.target_code if contract.target_code else contract.code
         if code not in self.infos.keys():
             snapshot = self.api.snapshots([contract])[0]
             self.infos[code] = StatusInfo(**snapshot)
@@ -77,16 +77,18 @@ class TouchOrderExecutor:
                     )
             tconds_dict["order_contract"] = self.contracts[condition.order_cmd.code]
             tconds_dict["order"] = condition.order_cmd.order
-            if condition.lossprofit_cmd:
-                tconds_dict["excuted_cb"] = place_order_cb
             return StoreCond(**tconds_dict)
 
     def add_condition(self, condition: TouchOrderCond):
-        code = condition.touch_cmd.code
-        touch_contract = self.contracts[code]
+        touch_contract = self.contracts[condition.touch_cmd.code]
         self.update_snapshot(touch_contract)
         store_condition = self.adjust_condition(condition, touch_contract)
         if store_condition:
+            code = (
+                touch_contract.target_code
+                if touch_contract.target_code
+                else touch_contract.code
+            )
             if code in self.conditions.keys():
                 self.conditions[code].append(store_condition)
             else:
@@ -212,29 +214,3 @@ class TouchOrderExecutor:
             return self.conditions
         else:
             return self.conditions[code]
-
-    def place_order_cb(self, state, msg):
-        if "Order" in state:
-            code = msg["contract"]["code"]
-            conds = self.conditions[code] if code in self.conditions else []
-            for cond in conds:
-                if cond.result == msg:
-                    seqno = msg["order"]["seqno"]
-                    price = float(msg["order"]["price"])
-                    storecond = StoreLossProfit(
-                        loss_close=cond.lossprofit_cmd.loss_pricegap,
-                        profit_close=cond.lossprofit_cmd.profit_pricegap,
-                        order_contract=msg["contract"],
-                        loss_order=cond.lossprofit_cmd.lossorder_cmd,
-                        profit_order=cond.lossprofit_cmd.profitorder_cmd,
-                    )
-                    self.orders[seqno][code] = storecond
-        elif "Deal" in state:
-            seqno = msg["seqno"]
-            if self.orders[seqno]:
-                code = msg["code"]
-                store_cond = self.orders[seqno][code]
-                if code in self.conditions.keys():
-                    self.conditions[code].append(store_cond)
-                else:
-                    self.conditions[code] = [store_cond]

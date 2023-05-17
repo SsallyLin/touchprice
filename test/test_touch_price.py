@@ -1,9 +1,11 @@
 import pytest
 import typing
+import datetime
 from decimal import Decimal
 from dataclasses import dataclass
-from shioaji.contracts import Future
-from shioaji.order import Order
+from shioaji.account import StockAccount, Account
+from shioaji.contracts import Future, Stock, Contract
+from shioaji.order import Order, Trade, OrderStatus
 from shioaji.data import Snapshot
 from shioaji import Exchange
 from touchprice import (
@@ -703,11 +705,3 @@ def test_show_condition(
     }
     res = len(touch_order.show_condition(code))
     assert res == length
-
-
-testcase_place_order_cb = []
-
-
-@pytest.mark.parametrize("state, msg", testcase_place_order_cb)
-def test_place_order_cb(state, msg):
-    pass
