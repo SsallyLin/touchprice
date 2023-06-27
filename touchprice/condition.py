@@ -1,11 +1,11 @@
 import typing
 import shioaji as sj
-from touchprice.core import Base
+from pydantic import BaseModel
 from touchprice.constant import Trend, PriceType
 from typing import Callable
 
 
-class PriceGap(Base):
+class PriceGap(BaseModel):
     price: float
     trend: Trend
 
@@ -24,7 +24,7 @@ class Price(PriceGap):
         super().__init__(**dict(trend=trend, price=price, price_type=price_type))
 
 
-class QtyGap(Base):
+class QtyGap(BaseModel):
     qty: int
     trend: Trend
 
@@ -36,30 +36,30 @@ class Qty(QtyGap):
         super().__init__(**dict(qty=qty, trend=trend))
 
 
-class TouchCmd(Base):
+class TouchCmd(BaseModel):
     code: str
-    close: Price = None
-    buy_price: Price = None
-    sell_price: Price = None
-    high: Price = None
-    low: Price = None
-    volume: Qty = None
-    total_volume: Qty = None
-    ask_volume: Qty = None
-    bid_volume: Qty = None
+    close: typing.Optional[Price] = None
+    buy_price: typing.Optional[Price] = None
+    sell_price: typing.Optional[Price] = None
+    high: typing.Optional[Price] = None
+    low: typing.Optional[Price] = None
+    volume: typing.Optional[Qty] = None
+    total_volume: typing.Optional[Qty] = None
+    ask_volume: typing.Optional[Qty] = None
+    bid_volume: typing.Optional[Qty] = None
 
     def __init__(
         self,
         code: str,
-        close: Price = None,
-        buy_price: Price = None,
-        sell_price: Price = None,
-        high: Price = None,
-        low: Price = None,
-        volume: Qty = None,
-        total_volume: Qty = None,
-        ask_volume: Qty = None,
-        bid_volume: Qty = None,
+        close: typing.Optional[Price] = None,
+        buy_price: typing.Optional[Price] = None,
+        sell_price: typing.Optional[Price] = None,
+        high: typing.Optional[Price] = None,
+        low: typing.Optional[Price] = None,
+        volume: typing.Optional[Qty] = None,
+        total_volume: typing.Optional[Qty] = None,
+        ask_volume: typing.Optional[Qty] = None,
+        bid_volume: typing.Optional[Qty] = None,
     ):
         super().__init__(
             **dict(
@@ -76,8 +76,11 @@ class TouchCmd(Base):
             )
         )
 
+    def __repr_args__(self):
+        return [(k, v) for k, v in self._iter(to_dict=False, exclude_defaults=True)]
 
-class OrderCmd(Base):
+
+class OrderCmd(BaseModel):
     code: str
     order: sj.order.Order
 
@@ -85,14 +88,14 @@ class OrderCmd(Base):
         super().__init__(**dict(code=code, order=order))
 
 
-class LossProfitCmd(Base):
+class LossProfitCmd(BaseModel):
     loss_pricegap: PriceGap = None
     loss_order: sj.Order = None
     profit_pricegap: PriceGap = None
     profit_order: sj.Order = None
 
 
-class StoreLossProfit(Base):
+class StoreLossProfit(BaseModel):
     loss_close: PriceGap = None
     profit_close: PriceGap = None
     order_contract: sj.contracts.Contract
@@ -103,7 +106,7 @@ class StoreLossProfit(Base):
     excuted: bool = False
 
 
-class TouchOrderCond(Base):
+class TouchOrderCond(BaseModel):
     touch_cmd: TouchCmd
     order_cmd: OrderCmd
     lossprofit_cmd: LossProfitCmd = None
@@ -116,29 +119,34 @@ class TouchOrderCond(Base):
     ):
         super().__init__(
             **dict(
-                touch_cmd=touch_cmd, order_cmd=order_cmd, lossprofit_cmd=lossprofit_cmd,
+                touch_cmd=touch_cmd,
+                order_cmd=order_cmd,
+                lossprofit_cmd=lossprofit_cmd,
             )
         )
 
 
-class StoreCond(Base):
-    close: PriceGap = None
-    buy_price: PriceGap = None
-    sell_price: PriceGap = None
-    high: PriceGap = None
-    low: PriceGap = None
-    volume: QtyGap = None
-    total_volume: QtyGap = None
-    ask_volume: QtyGap = None
-    bid_volume: QtyGap = None
+class StoreCond(BaseModel):
+    close: typing.Optional[PriceGap] = None
+    buy_price: typing.Optional[PriceGap] = None
+    sell_price: typing.Optional[PriceGap] = None
+    high: typing.Optional[PriceGap] = None
+    low: typing.Optional[PriceGap] = None
+    volume: typing.Optional[QtyGap] = None
+    total_volume: typing.Optional[QtyGap] = None
+    ask_volume: typing.Optional[QtyGap] = None
+    bid_volume: typing.Optional[QtyGap] = None
     order_contract: sj.contracts.Contract
     order: sj.Order
     result: sj.order.Trade = None
     excuted_cb: Callable[[sj.order.Trade], sj.order.Trade] = print
     excuted: bool = False
 
+    def __repr_args__(self):
+        return [(k, v) for k, v in self._iter(to_dict=False, exclude_defaults=True)]
 
-class StatusInfo(Base):
+
+class StatusInfo(BaseModel):
     close: float
     buy_price: float
     sell_price: float

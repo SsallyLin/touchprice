@@ -66,9 +66,7 @@ class TouchOrderExecutor:
     def adjust_condition(
         self, condition: TouchOrderCond, contract: sj.contracts.Contract
     ):
-        tconds_dict = {
-            key: dict(value) for key, value in condition.touch_cmd if not key == "code"
-        }
+        tconds_dict = condition.touch_cmd.dict(exclude={"code"}, exclude_none=True)
         if tconds_dict:
             for key, value in tconds_dict.items():
                 if key not in ["volume", "total_volume", "ask_volume", "bid_volume"]:
@@ -128,11 +126,15 @@ class TouchOrderExecutor:
                     order_contract = conds.order_contract
                     if isinstance(conds, StoreCond):
                         order = conds.order
-                        cond = conds.dict()
-                        cond.pop("order")
-                        cond.pop("order_contract")
-                        cond.pop("excuted")
-                        cond.pop("excuted_cb")
+                        cond = conds.dict(
+                            exclude={
+                                "order",
+                                "order_contract",
+                                "excuted",
+                                "excuted_cb",
+                            },
+                            exclude_none=True,
+                        )
                         if all(
                             self.touch_cond(value, float(info[key]))
                             for key, value in cond.items()
@@ -146,12 +148,16 @@ class TouchOrderExecutor:
                     elif isinstance(conds, StoreLossProfit):
                         loss_order = conds.loss_order
                         profit_order = conds.profit_order
-                        cond = conds.dict()
-                        cond.pop("loss_order")
-                        cond.pop("profit_order")
-                        cond.pop("order_contract")
-                        cond.pop("excuted")
-                        cond.pop("excuted_cb")
+                        cond = conds.dict(
+                            exclude={
+                                "loss_order",
+                                "profit_order",
+                                "order_contract",
+                                "excuted",
+                                "excuted_cb",
+                            },
+                            exclude_none=True,
+                        )
                         order = None
                         if "loss_close" in cond and self.touch_cond(
                             cond["loss_close"], info["close"]
@@ -210,7 +216,7 @@ class TouchOrderExecutor:
                 self.touch(code)
 
     def show_condition(self, code: str = None):
-        if not code:
-            return self.conditions
-        else:
+        if code:
             return self.conditions[code]
+        else:
+            return self.conditions
