@@ -145,35 +145,6 @@ class TouchOrderExecutor:
                                 order,
                                 cb=self.conditions[code][num].excuted_cb,
                             )
-                    elif isinstance(conds, StoreLossProfit):
-                        loss_order = conds.loss_order
-                        profit_order = conds.profit_order
-                        cond = conds.dict(
-                            exclude={
-                                "loss_order",
-                                "profit_order",
-                                "order_contract",
-                                "excuted",
-                                "excuted_cb",
-                            },
-                            exclude_none=True,
-                        )
-                        order = None
-                        if "loss_close" in cond and self.touch_cond(
-                            cond["loss_close"], info["close"]
-                        ):
-                            order = loss_order
-                        elif "profit_close" in cond and self.touch_cond(
-                            cond["profit_close"], info["close"]
-                        ):
-                            order = profit_order
-                        if order:
-                            self.conditions[code][num].excuted = True
-                            self.conditions[code][num].result = self.api.place_order(
-                                order_contract,
-                                order,
-                                cb=self.conditions[code][num].excuted_cb,
-                            )
 
     def integration_bidask(self, exchange: Exchange, bidask: BidAskSTKv1):
         if bidask.simtrade == 1:

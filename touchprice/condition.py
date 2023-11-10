@@ -3,6 +3,7 @@ import shioaji as sj
 from pydantic import BaseModel
 from touchprice.constant import Trend, PriceType
 from typing import Callable
+from decimal import Decimal
 
 
 class PriceGap(BaseModel):
@@ -109,19 +110,16 @@ class StoreLossProfit(BaseModel):
 class TouchOrderCond(BaseModel):
     touch_cmd: TouchCmd
     order_cmd: OrderCmd
-    lossprofit_cmd: LossProfitCmd = None
 
     def __init__(
         self,
         touch_cmd: TouchCmd,
         order_cmd: OrderCmd,
-        lossprofit_cmd: typing.List[LossProfitCmd] = None,
     ):
         super().__init__(
             **dict(
                 touch_cmd=touch_cmd,
                 order_cmd=order_cmd,
-                lossprofit_cmd=lossprofit_cmd,
             )
         )
 
@@ -147,15 +145,15 @@ class StoreCond(BaseModel):
 
 
 class StatusInfo(BaseModel):
-    close: float
-    buy_price: float
-    sell_price: float
-    high: float
-    low: float
+    close: Decimal
+    buy_price: Decimal
+    sell_price: Decimal
+    high: Decimal
+    low: Decimal
     change_price: float  # 漲跌
     change_rate: float  # 幅度
     volume: int
     total_volume: int
     ask_volume: int = 0
     bid_volume: int = 0
-    add_ts: int = 0
+    add_ts: float = 0

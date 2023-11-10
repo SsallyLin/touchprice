@@ -8,6 +8,7 @@ authors = ["Sally <nipolikae@gmail.com>"]
 python = "^3.7"
 requests = "2.22.0"
 shioaji = "^1.0"
+pydantic = "^2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
